@@ -51,6 +51,18 @@
 #define N_CHEERIOS 18
 #define N_OBJECTS N_ORANGES+N_BUTTERS+1+N_CHEERIOS*4+((N_CHEERIOS/2) +1)*4+1
 #define CAPTION "AVT Assignment 1"
+
+// Uniform Buffer for Matrices
+// this buffer will contain 3 matrices: projection, view and model
+// each matrix is a float array with 16 components
+GLuint matricesUniBuffer;
+#define MatricesUniBufferSize sizeof(float) * 16 * 3
+#define ProjMatrixOffset 0
+#define ViewMatrixOffset sizeof(float) * 16
+#define ModelMatrixOffset sizeof(float) * 16 * 2
+#define MatrixSize sizeof(float) * 16
+
+
 int WindowHandle = 0;
 int WinX = 640, WinY = 480;
 
@@ -74,6 +86,8 @@ std::map<std::string, GLuint> textureIdMap;
 // scale factor for the model to fit in the window
 float scaleFactor;
 
+// For push and pop matrix
+std::vector<float *> matrixStack;
 
 //External array storage defined in AVTmathLib.cpp
 
@@ -83,6 +97,14 @@ extern float mCompMatrix[COUNT_COMPUTED_MATRICES][16];
 
 /// The normal matrix
 extern float mNormal3x3[9];
+
+// Model Matrix (part of the OpenGL Model View Matrix)
+float modelMatrix[16];
+
+// The sampler uniform for textured models
+// we are assuming a single texture so this will
+//always be texture unit 0
+GLuint texUnit = 0;
 
 GLint pvm_uniformId;
 GLint vm_uniformId;
@@ -104,12 +126,17 @@ long myTime,timebase = 0,frame = 0;
 char s[32];
 float lightPos[4] = {4.0f, 6.0f, 2.0f, 1.0f};
 
+
+GLuint matricesUniLoc = 1, materialUniLoc = 2;
+
 GLuint texture[1];
 
 static const std::string modelname = "bench.obj";
 
 
 std::vector<struct MyMesh> mesh(N_OBJECTS);
+std::vector<struct MyMesh> myMeshes;
+
 //struct MyMesh mesh[N_OBJECTS];
 int objId = 0; //id of the object mesh - to be used as index of mesh: mesh[objID] means the current mesh
 
@@ -550,7 +577,7 @@ void genVAOsAndUniformBuffer(const aiScene *sc) {
 		glBindBuffer(GL_UNIFORM_BUFFER, aMesh.uniformBlockIndex);
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(aMat), (void *)(&aMat), GL_STATIC_DRAW);
 
-		//myMeshes.push_back(aMesh);
+		myMeshes.push_back(aMesh);
 	}
 }
 void update(int value) {
@@ -606,8 +633,70 @@ void changeSize(int w, int h) {
 	ratio = (1.0f * w) / h;
 
 }
+void setModelMatrix() {
+
+	glBindBuffer(GL_UNIFORM_BUFFER, matricesUniBuffer);
+	glBufferSubData(GL_UNIFORM_BUFFER,
+		ModelMatrixOffset, MatrixSize, modelMatrix);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+}
 
 
+void pushMatrix() {
+
+	float *aux = (float *)malloc(sizeof(float) * 16);
+	memcpy(aux, modelMatrix, sizeof(float) * 16);
+	matrixStack.push_back(aux);
+}
+
+void popMatrix() {
+
+	float *m = matrixStack[matrixStack.size() - 1];
+	memcpy(modelMatrix, m, sizeof(float) * 16);
+	matrixStack.pop_back();
+	free(m);
+}
+
+// Render Assimp Model
+
+
+void recursive_render(const aiScene *sc, const aiNode* nd)
+{
+
+	// Get node transformation matrix
+	aiMatrix4x4 m = nd->mTransformation;
+	// OpenGL matrices are column major
+	m.Transpose();
+
+	// save model matrix and apply node transformation
+	pushMatrix();
+
+	float aux[16];
+	memcpy(aux, &m, sizeof(float) * 16);
+	multMatrix(modelMatrix, aux);
+	setModelMatrix();
+
+
+	// draw all meshes assigned to this node
+	for (unsigned int n = 0; n < nd->mNumMeshes; ++n) {
+		// bind material uniform
+		glBindBufferRange(GL_UNIFORM_BUFFER, materialUniLoc, myMeshes[nd->mMeshes[n]].uniformBlockIndex, 0, sizeof(struct MyMaterial));
+		// bind texture
+		glBindTexture(GL_TEXTURE_2D, myMeshes[nd->mMeshes[n]].texIndex);
+		// bind VAO
+		glBindVertexArray(myMeshes[nd->mMeshes[n]].vao);
+		// draw
+		glDrawElements(GL_TRIANGLES, myMeshes[nd->mMeshes[n]].numFaces * 3, GL_UNSIGNED_INT, 0);
+
+	}
+
+	// draw all children
+	for (unsigned int n = 0; n < nd->mNumChildren; ++n) {
+		recursive_render(sc, nd->mChildren[n]);
+	}
+	popMatrix();
+}
 // ------------------------------------------------------------
 //
 // Render stufff
@@ -699,6 +788,10 @@ void renderScene(void) {
 
 		popMatrix(MODEL);
 	}
+
+	glUniform1i(texUnit, 0);
+
+	recursive_render(scene, scene->mRootNode);
 
 	glutSwapBuffers();
 }
@@ -920,10 +1013,12 @@ GLuint setupShaders() {
 void init()
 {
 
-	/*if (!Import3DFromFile(modelname))
+	if (!Import3DFromFile(modelname))
 		return;
+	
+	LoadGLTextures(scene);
 
-	LoadGLTextures(scene);*/
+	genVAOsAndUniformBuffer(scene);
 
 	UP = 0, DOWN = 0, RIGHT = 0, LEFT = 0;
 	// set the camera position based on its spherical coordinates
