@@ -12,16 +12,30 @@ struct Material{
 	float shininess;
 	int texCount;
 };
+// This is for a shader uniform block
+struct MyMaterial {
+
+	float diffuse[4];
+	float ambient[4];
+	float specular[4];
+	float emissive[4];
+	float shininess;
+	int texCount;
+};
+
 // A model can be made of many meshes. Each is stored  in the following structure
 struct MyMesh {
 		GLuint vao;
 		GLuint texUnits[MAX_TEXTURES];
 		GLuint texTypes[MAX_TEXTURES];
+		GLuint texIndex;
+		GLuint uniformBlockIndex;
+		int numFaces;
 		float transform[16];
 		float position[3];
 		int numIndexes;
 		unsigned int type;
-		struct Material mat;
+		struct MyMaterial mat;
 		struct MyMesh *mesh;
 	};
 

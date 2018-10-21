@@ -21,7 +21,9 @@ Basic Revolution Geometry
 #include "basic_geometry.h"
 #include "cube.h"
 
-extern struct MyMesh mesh[];
+//extern struct MyMesh mesh[];
+extern std::vector<struct MyMesh> mesh;
+
 extern int objId;
 
 GLuint VboId[2];
