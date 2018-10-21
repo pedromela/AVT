@@ -657,7 +657,23 @@ void popMatrix() {
 	matrixStack.pop_back();
 	free(m);
 }
+// Defines a transformation matrix mat with a translation
+void setTranslationMatrix(float *mat, float x, float y, float z) {
 
+	setIdentityMatrix(mat, 4);
+	mat[12] = x;
+	mat[13] = y;
+	mat[14] = z;
+}
+// The equivalent to glTranslate applied to the model matrix
+void translate2(float x, float y, float z) {
+
+	float aux[16];
+
+	setTranslationMatrix(aux, x, y, z);
+	multMatrix(modelMatrix, aux);
+	setModelMatrix();
+}
 // Render Assimp Model
 
 
@@ -665,21 +681,27 @@ void recursive_render(const aiScene *sc, const aiNode* nd)
 {
 
 	// Get node transformation matrix
-	aiMatrix4x4 m = nd->mTransformation;
+	//aiMatrix4x4 m = nd->mTransformation;
 	// OpenGL matrices are column major
-	m.Transpose();
-
+	//m.Transpose();
+	
+	//m.Translation();
 	// save model matrix and apply node transformation
-	pushMatrix();
+	//pushMatrix();
 
-	float aux[16];
-	memcpy(aux, &m, sizeof(float) * 16);
-	multMatrix(modelMatrix, aux);
-	setModelMatrix();
-
+	//float aux[16];
+	//memcpy(aux, &m, sizeof(float) * 16);
+	//multMatrix(modelMatrix, aux);
+	
+	//setModelMatrix();
 
 	// draw all meshes assigned to this node
 	for (unsigned int n = 0; n < nd->mNumMeshes; ++n) {
+		computeDerivedMatrix(PROJ_VIEW_MODEL);
+		glUniformMatrix4fv(vm_uniformId, 1, GL_FALSE, mCompMatrix[VIEW_MODEL]);
+		glUniformMatrix4fv(pvm_uniformId, 1, GL_FALSE, mCompMatrix[PROJ_VIEW_MODEL]);
+		computeNormalMatrix3x3();
+		glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
 		// bind material uniform
 		glBindBufferRange(GL_UNIFORM_BUFFER, materialUniLoc, myMeshes[nd->mMeshes[n]].uniformBlockIndex, 0, sizeof(struct MyMaterial));
 		// bind texture
@@ -695,7 +717,7 @@ void recursive_render(const aiScene *sc, const aiNode* nd)
 	for (unsigned int n = 0; n < nd->mNumChildren; ++n) {
 		recursive_render(sc, nd->mChildren[n]);
 	}
-	popMatrix();
+	//popMatrix();
 }
 // ------------------------------------------------------------
 //
@@ -736,8 +758,8 @@ void renderScene(void) {
 		loadIdentity(MODEL);
 		// set the camera using a function similar to gluLookAt
 		//printf("%f %f %f\n", camX, camY, camZ);
-		printf("car : %f %f %f\n", car->getPosition()->getX(), car->getPosition()->getZ(), car->getPosition()->getY());
-		printf("cam %d: %f %f %f\n", CAM, _cameras[CAM - 1]->eye.getX(), _cameras[CAM - 1]->eye.getY(), _cameras[CAM - 1]->eye.getZ());
+		//printf("car : %f %f %f\n", car->getPosition()->getX(), car->getPosition()->getZ(), car->getPosition()->getY());
+		//printf("cam %d: %f %f %f\n", CAM, _cameras[CAM - 1]->eye.getX(), _cameras[CAM - 1]->eye.getY(), _cameras[CAM - 1]->eye.getZ());
 		//lookAt(_cameras[CAM - 1]->eye.getX()+camX, _cameras[CAM - 1]->eye.getZ()+camY, _cameras[CAM - 1]->eye.getY()+camZ,car->getPosition()->getX(), car->getPosition()->getZ(),car->getPosition()->getY(),0, 1, 0);
 		lookAt(_cameras[CAM - 1]->eye.getX(), _cameras[CAM - 1]->eye.getY(), _cameras[CAM - 1]->eye.getZ(), car->getPosition()->getX(), car->getPosition()->getZ(), car->getPosition()->getY(), 0, 1, 0);
 
@@ -749,7 +771,7 @@ void renderScene(void) {
 
 	//glUniform4fv(lPos_uniformId, 1, lightPos); //efeito capacete do mineiro, ou seja lighPos foi definido em eye coord 
 
-	float res[N_OBJECTS];
+	float *res =(float*) malloc(sizeof(float) * _game_objects.size());
 	multMatrixPoint(VIEW, lightPos,res);   //lightPos definido em World Coord so is converted to eye space
 	glUniform4fv(lPos_uniformId, 1, res);
 	//printf("size %d\n", _game_objects.size());
@@ -757,6 +779,8 @@ void renderScene(void) {
 	//car->draw(shader, vm_uniformId, pvm_uniformId, normal_uniformId);
 	for (int i = 0; i < _game_objects.size(); i++) {
 		// send the material
+		//pushMatrix(MODEL); // don in obj->draw()
+
 		loc = glGetUniformLocation(shader.getProgramIndex(), "mat.ambient");
 		glUniform4fv(loc, 1, _game_objects[i]->mesh->mat.ambient);
 		loc = glGetUniformLocation(shader.getProgramIndex(), "mat.diffuse");
@@ -788,10 +812,14 @@ void renderScene(void) {
 
 		popMatrix(MODEL);
 	}
+	pushMatrix(MODEL);
+
+	translate(MODEL, 0, 0, 0);
 
 	glUniform1i(texUnit, 0);
-
+	
 	recursive_render(scene, scene->mRootNode);
+	popMatrix(MODEL);
 
 	glutSwapBuffers();
 }
