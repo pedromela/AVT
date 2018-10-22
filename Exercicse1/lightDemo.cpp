@@ -129,7 +129,7 @@ float lightPos[4] = {4.0f, 6.0f, 2.0f, 1.0f};
 
 GLuint matricesUniLoc = 1, materialUniLoc = 2;
 
-GLuint texture[1];
+GLuint texture[10];
 
 static const std::string modelname = "bench.obj";
 
@@ -335,8 +335,9 @@ int LoadGLTextures(const aiScene* scene)
 	{
 		int texIndex = 0;
 		aiString path;	// filename
-
+		
 		aiReturn texFound = scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
+		printf("tex path : %s\n", path.data);
 		while (texFound == AI_SUCCESS) {
 			//fill map with textures, OpenGL image ids set to 0
 			textureIdMap[path.data] = 0;
@@ -642,38 +643,6 @@ void setModelMatrix() {
 
 }
 
-
-void pushMatrix() {
-
-	float *aux = (float *)malloc(sizeof(float) * 16);
-	memcpy(aux, modelMatrix, sizeof(float) * 16);
-	matrixStack.push_back(aux);
-}
-
-void popMatrix() {
-
-	float *m = matrixStack[matrixStack.size() - 1];
-	memcpy(modelMatrix, m, sizeof(float) * 16);
-	matrixStack.pop_back();
-	free(m);
-}
-// Defines a transformation matrix mat with a translation
-void setTranslationMatrix(float *mat, float x, float y, float z) {
-
-	setIdentityMatrix(mat, 4);
-	mat[12] = x;
-	mat[13] = y;
-	mat[14] = z;
-}
-// The equivalent to glTranslate applied to the model matrix
-void translate2(float x, float y, float z) {
-
-	float aux[16];
-
-	setTranslationMatrix(aux, x, y, z);
-	multMatrix(modelMatrix, aux);
-	setModelMatrix();
-}
 // Render Assimp Model
 
 
@@ -1040,6 +1009,10 @@ GLuint setupShaders() {
 
 void init()
 {
+
+	loadTextureFromFile("./plank01.bmp");
+	//add_texture_orange(loadTextureFromFile("./orange.bmp"));
+	//add_texture_butter(loadTextureFromFile("./marble02.bmp"));
 
 	if (!Import3DFromFile(modelname))
 		return;
