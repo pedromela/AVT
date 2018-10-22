@@ -131,7 +131,7 @@ GLuint matricesUniLoc = 1, materialUniLoc = 2;
 
 GLuint texture[10];
 
-static const std::string modelname = "bench.obj";
+static const std::string modelname = "bmw27_gpu.obj";
 
 
 std::vector<struct MyMesh> mesh(N_OBJECTS);
