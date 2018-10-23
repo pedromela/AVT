@@ -193,7 +193,19 @@ void add_cheerioOut(Cheerios* _cheerios) {
 	c_out.push_back(_cheerios);
 }
 
-
+void restart() {
+	int i = 0;
+	car->setVidas(5);
+	for (i = 0; i < _orange_objects.size(); i++) {
+		_orange_objects[i]->setSpeed(0.002, 0.002, _orange_objects[i]->getSpeed().getZ());
+	}
+	for (i = 0; i <c_in.size(); i++) {
+		c_in[i]->returnToInitPos();
+	}
+	for (i = 0; i < c_out.size(); i++) {
+		c_out[i]->returnToInitPos();
+	}
+}
 
 void checkCar_Butters() {
 	int i, count = 0;
@@ -254,11 +266,15 @@ void checkCar_Oranges() {
 
 	for (i = 0; i < _orange_objects.size(); i++) {
 		if (car->Colision(_orange_objects[i], car->getAngle(), 0)) {
-			std::cout << "LARANJA" << std::endl;
-			std::cout << "RESET" << std::endl;
-			car->setSpeed(0, 0, 0);
-			car->setPosition(4, 2, 0.1);
-			car->setAngle(0);
+			if (car->getVidas() > 0) {
+				std::cout << "LARANJA" << std::endl;
+				std::cout << "RESET" << std::endl;
+				car->setSpeed(0, 0, 0);
+				car->setPosition(4, 2, 0.1);
+				car->setAngle(0);
+				car->setVidas(car->getVidas() - 1);
+			}
+			else { restart();}
 		}
 	}
 }

@@ -93,6 +93,14 @@ bool Car::getColidou() {
 	return colidiu;
 }
 
+int Car::getVidas() {
+	return vidas;
+}
+
+void Car::setVidas(int v) {
+	vidas = v;
+}
+
 void Car::update(double delta) {
 	int i = 0;
 	if (HasSpeed() != 0) {

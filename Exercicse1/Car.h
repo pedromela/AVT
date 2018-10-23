@@ -10,6 +10,7 @@
 class Car : public DynamicObject {
 	double angle, angle_w;
 	int UP, DOWN, RIGHT, LEFT;
+	int vidas = 5;
 	float escala;
 	float largura;
 	float comprimento;
@@ -37,6 +38,8 @@ public:
 	void setDir(int up, int down, int right, int left);
 	void setColidiu(bool bo);
 	bool getColidou();
+	void setVidas(int v);
+	int  getVidas();
 	void initLights();
 	void onLights();
 	void offLights();

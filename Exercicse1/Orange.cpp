@@ -55,22 +55,21 @@ void Orange::update(double delta) {
 		angle = rand() % 360;
 		x = rand() % 29;
 		i = rand() % 2;
+		setSpeed(getSpeed().getX() * 1.1, getSpeed().getX()  * 1.1, getSpeed().getZ());
 		if (i == 0 && angle > 0 && angle < 180) {
-			setSpeed(0.002, 0.002, getSpeed().getZ());
 			setPosition(x, 0.0, z);
 			angle = -angle;
 		}
 		if (i == 1 && angle > 0 && angle < 180) {
-			setSpeed(0.002, 0.002, getSpeed().getZ());
 			setPosition(0, x , z);
 		}
 		if (i == 0 && angle >= 180 && angle <= 360) {
-			setSpeed(0.002, -0.002, getSpeed().getZ());
+			setSpeed(getSpeed().getX(), -getSpeed().getX(), getSpeed().getZ());
 			setPosition(x, 20.0, z);
 			//angle = -angle;
 		}
 		if (i == 1 && angle >= 180 && angle <= 360) {
-			setSpeed(0.002, -0.002, getSpeed().getZ());
+			setSpeed(getSpeed().getX(), -getSpeed().getX(), getSpeed().getZ());
 			setPosition(20.0, x, z);
 		}
 	}

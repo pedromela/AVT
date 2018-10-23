@@ -2,6 +2,7 @@
 
 
 Cheerios::Cheerios() {
+	initPos.set(0, 0, 0);
 	setPosition(0, 0, 0);
 	setRaio(0.15);
 	setSpeed(0, 0, 0);
@@ -9,6 +10,7 @@ Cheerios::Cheerios() {
 }
 
 Cheerios::Cheerios(double x, double y, double z) {
+	initPos.set(x, y, z);
 	setPosition(x, y, z);
 	setRaio(0.15);
 	setSpeed(0, 0, 0);
@@ -17,6 +19,7 @@ Cheerios::Cheerios(double x, double y, double z) {
 
 Cheerios::Cheerios(double x, double y, double z, struct MyMesh * _mesh)
 {
+	initPos.set(x, y, z);
 	setPosition(x, y, z);
 	setRaio(0.15);
 	setSpeed(0, 0, 0);
@@ -54,4 +57,8 @@ void Cheerios::update(double delta) {
 void Cheerios::draw() {
 	pushMatrix(MODEL);
 	translate(MODEL, getPosition()->getX(), getPosition()->getZ(), getPosition()->getY());
+}
+
+void Cheerios::returnToInitPos() {
+	setPosition(initPos.getX(), initPos.getY(), initPos.getZ());
 }

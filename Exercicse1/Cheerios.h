@@ -14,6 +14,7 @@ class Cheerios : public Obstacle {
 	float diff[4] = { 0.26f,0.27f,0.0f,1.0f };
 	float spec[4] = { 0.22f,0.41f,0.23f,1.0f };
 	float shine = 55.0f;
+	Vector3 initPos;
 
 public:
 	Cheerios();
@@ -23,6 +24,7 @@ public:
 
 	void draw();
 	void update(double delta);
+	void returnToInitPos();
 
 };
 
