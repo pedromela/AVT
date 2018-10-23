@@ -582,6 +582,7 @@ void genVAOsAndUniformBuffer(const aiScene *sc) {
 	}
 }
 void update(int value) {
+	car->update(value);
 	for (int i = 0; i < _game_objects.size(); i++)
 		_game_objects[i]->update(value);
 	if (CAM == 3) {
@@ -786,7 +787,7 @@ void renderScene(void) {
 	//translate(MODEL, 0, 0, 0);
 	//rotate(MODEL, 180, 0, 1, 0);
 	car->draw();
-	glUniform1i(texUnit, 0);
+	//glUniform1i(texUnit, 0);
 	
 	recursive_render(scene, scene->mRootNode);
 	popMatrix(MODEL);
@@ -987,7 +988,7 @@ GLuint setupShaders() {
 	glBindFragDataLocation(shader.getProgramIndex(), 0,"colorOut");
 	glBindAttribLocation(shader.getProgramIndex(), VERTEX_COORD_ATTRIB, "position");
 	glBindAttribLocation(shader.getProgramIndex(), NORMAL_ATTRIB, "normal");
-	//glBindAttribLocation(shader.getProgramIndex(), TEXTURE_COORD_ATTRIB, "texCoord");
+	glBindAttribLocation(shader.getProgramIndex(), TEXTURE_COORD_ATTRIB, "texCoord");
 
 	glLinkProgram(shader.getProgramIndex());
 
@@ -1037,13 +1038,13 @@ void init()
 	int texcount = 0;
 	//add_orange(new Orange(rand() % 21 - 1.5, rand() % 21 - 1.5, 0.5));
 	objId = 0;
-	car = new Car(4, 2, 0.1, &mesh[objId]);
-	add(car);
+	car = new Car(4, 2, 0.1);
+	//add(car);
 	float amb1[4] = { 1.0f,0.11f,0.0f,1.0f };
 	float diff1[4] = { 0.88f,0.69f,0.0f,1.0f };
 	float spec1[4] = { 0.26f,0.46f,0.09f,1.0f };
 	shininess = 64.0f;
-	for (int i = 1; i <= N_ORANGES; i++) {
+	for (int i = 0; i <= N_ORANGES; i++) {
 		objId = i;
 		Orange *o = new Orange(rand() % 21 - 1.5, rand() % 21 - 1.5, 0.5, &mesh[objId]);
 		add(o);
