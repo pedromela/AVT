@@ -131,7 +131,7 @@ GLuint matricesUniLoc = 1, materialUniLoc = 2;
 
 GLuint texture[10];
 
-static const std::string modelname = "bmw27_gpu.obj";
+static const std::string modelname = "carro.obj";
 
 
 std::vector<struct MyMesh> mesh(N_OBJECTS);
@@ -337,10 +337,10 @@ int LoadGLTextures(const aiScene* scene)
 		aiString path;	// filename
 		
 		aiReturn texFound = scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
-		printf("tex path : %s\n", path.data);
 		while (texFound == AI_SUCCESS) {
 			//fill map with textures, OpenGL image ids set to 0
 			textureIdMap[path.data] = 0;
+			printf("tex path : %s\n", path.data);
 			// more textures?
 			texIndex++;
 			texFound = scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
@@ -781,10 +781,11 @@ void renderScene(void) {
 
 		popMatrix(MODEL);
 	}
-	pushMatrix(MODEL);
+	//pushMatrix(MODEL);
 
-	translate(MODEL, 0, 0, 0);
-
+	//translate(MODEL, 0, 0, 0);
+	//rotate(MODEL, 180, 0, 1, 0);
+	car->draw();
 	glUniform1i(texUnit, 0);
 	
 	recursive_render(scene, scene->mRootNode);

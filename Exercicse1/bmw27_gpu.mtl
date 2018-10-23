@@ -1,5 +1,5 @@
 # Blender MTL File: 'bmw27_gpu.blend'
-# Material Count: 22
+# Material Count: 21
 
 newmtl BMWBlack
 Ns 390.196078
@@ -60,7 +60,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 1
-map_Kd C:\Users\Henrique\AppData\Local\Temp\Rar$DIa10708.33230\textures\brake.jpg
+map_Kd textures\brake.jpg
 
 newmtl CarShellNew
 Ns 37.254902
@@ -101,9 +101,9 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 0.500000
 illum 7
-map_Kd C:\Users\Henrique\AppData\Local\Temp\Rar$DIa10708.33230\textures\backwindow.png
-map_Ke C:\\Users\\Henrique\\AppData\\Local\\Temp\\Rar$DIa10708.33230\\textures\\backwindow.png
-map_d C:\\Users\\Henrique\\AppData\\Local\\Temp\\Rar$DIa10708.33230\\textures\\backwindow.png
+map_Kd textures\backwindow.png
+map_Ke textures\\backwindow.png
+map_d textures\\backwindow.png
 
 newmtl HeadLightAngelEye
 Ns 17.647059
@@ -165,16 +165,6 @@ Ni 1.000000
 d 1.000000
 illum 1
 
-newmtl Material
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 0.106295 0.007354 0.004857
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 2
-
 newmtl MatteBlack
 Ns 796.078431
 Ka 1.000000 1.000000 1.000000
@@ -184,7 +174,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd C:\Users\Henrique\AppData\Local\Temp\Rar$DIa10708.33230\textures\plate.PNG
+map_Kd textures\plate.PNG
 
 newmtl MatteBlack_NONE
 Ns 796.078431
@@ -205,7 +195,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd C:\Users\Henrique\AppData\Local\Temp\Rar$DIa10708.33230\textures\plate.PNG
+map_Kd textures\plate.PNG
 
 newmtl Tailight
 Ns 27.450980
@@ -216,9 +206,9 @@ Ke 0.800000 0.008831 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd C:\Users\Henrique\AppData\Local\Temp\Rar$DIa10708.33230\textures\tailight.jpg
-map_Bump -bm 0.100000 C:\\Users\\Henrique\\AppData\\Local\\Temp\\Rar$DIa10708.33230\\textures\\tailight.jpg
-map_Ke C:\\Users\\Henrique\\AppData\\Local\\Temp\\Rar$DIa10708.33230\\textures\\tailight.jpg
+map_Kd textures\tailight.jpg
+map_Bump -bm 0.100000 textures\\tailight.jpg
+map_Ke textures\\tailight.jpg
 
 newmtl TireRubber
 Ns 96.078431
@@ -229,5 +219,5 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd C:\Users\Henrique\AppData\Local\Temp\Rar$DIa10708.33230\textures\sidewall.jpg
-map_Bump -bm 0.200000 C:\\Users\\Henrique\\AppData\\Local\\Temp\\Rar$DIa10708.33230\\textures\\sidewall.jpg
+map_Kd textures\sidewall.jpg
+map_Bump -bm 0.200000 textures\\sidewall.jpg

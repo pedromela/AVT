@@ -147,6 +147,8 @@ void Car::setDir(int up, int down, int right, int left) {
 void Car::draw() {
 	pushMatrix(MODEL);
 	translate(MODEL, getPosition()->getX(), getPosition()->getZ(), getPosition()->getY());
+	rotate(MODEL, -angle, 0.0, 1.0, 0.0); 
+
 }
 
 void Car::draw(VSShaderLib shader, GLint vm_uniformId, GLint pvm_uniformId, GLint normal_uniformId)

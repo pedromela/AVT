@@ -1,0 +1,10 @@
+newmtl None
+Ka 0.117647 0.117647 0.117647
+Kd 0.972549 0.968627 0.941176
+Ks 0.223686 0.223686 0.223686
+Ns 143.012695
+d 1.000000
+Tr 0.000000
+map_Kd Capsule-Diffuse.psd 
+map_Bump Cork-4-Bump1.psd 
+
