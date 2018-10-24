@@ -42,8 +42,8 @@ Car::Car(double x, double y, double z, struct MyMesh *_mesh) : DynamicObject()
 	lights = false;
 	float pos[] = { 0.0f, 0.0f, 0.0f };
 	float amb[] = { 0.2f, 0.15f, 0.1f, 1.0f };
-	float diff[] = { 0.8f, 0.6f, 0.4f, 1.0f };
-	float spec[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	float diff[] = { 0.2f, 0.6f, 0.4f, 1.0f };
+	float spec[] = { 0.4f, 0.8f, 0.8f, 1.0f };
 	float emissive[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	float shininess = 100.0f;
 	int texcount = 0;
@@ -133,10 +133,18 @@ void Car::update(double delta) {
 			if (angle == -360) angle = 0;
 		}*/
 		d = sqrt((getSpeed().getX() * getSpeed().getX()) + (getSpeed().getY() * getSpeed().getY()));
-		if (d < 2.5)
-			angle = angle - 1000 * d;
-		else
-			angle = angle - 1000 * 2.5;
+		if (d < 2.5){
+			if (UP == 1)
+				angle = angle - 1000 * d;
+			if (DOWN == 1)
+				angle = angle + 1000 * d;
+		}
+		else{
+			if (UP == 1)
+				angle = angle - 1000 * 2.5;
+			if (DOWN == 1)
+				angle = angle + 1000 * 2.5;
+		}
 	}
 	if (LEFT == 1) {
 		/*if (UP == 1 || DOWN == 1) {
@@ -145,10 +153,18 @@ void Car::update(double delta) {
 			if (angle == -360) angle = 0;
 		}*/
 		d = sqrt((getSpeed().getX() * getSpeed().getX()) + (getSpeed().getY() * getSpeed().getY()));
-		if (d < 2.5)
-			angle = angle + 1000 * d;
-		else
-			angle = angle + 1000 * 2.5;
+		if (d < 2.5) {
+			if (UP == 1)
+				angle = angle + 1000 * d;
+			if (DOWN == 1)
+				angle = angle - 1000 * d;
+		}
+		else {
+			if (UP == 1)
+				angle = angle + 1000 * 2.5;
+			if (DOWN == 1)
+				angle = angle - 1000 * 2.5;
+		}
 	}
 	setPosition(getPosition()->getX() + getSpeed().getX()*cos(angle*PI / 180)*delta, getPosition()->getY() + getSpeed().getY()*sin(angle*PI / 180)*delta, getPosition()->getZ() + getSpeed().getZ());
 	setPontos(getPontos() + sqrt((getSpeed().getX() * getSpeed().getX()) + (getSpeed().getY() * getSpeed().getY()))*10);
