@@ -763,12 +763,8 @@ void renderScene(void) {
 		//printf("car : %f %f %f\n", car->getPosition()->getX(), car->getPosition()->getZ(), car->getPosition()->getY());
 		//printf("cam %d: %f %f %f\n", CAM, _cameras[CAM - 1]->eye.getX(), _cameras[CAM - 1]->eye.getY(), _cameras[CAM - 1]->eye.getZ());
 		//lookAt(_cameras[CAM - 1]->eye.getX()+camX, _cameras[CAM - 1]->eye.getZ()+camY, _cameras[CAM - 1]->eye.getY()+camZ,car->getPosition()->getX(), car->getPosition()->getZ(),car->getPosition()->getY(),0, 1, 0);
-		if(tracking == 0) {
-			lookAt(_cameras[CAM - 1]->eye.getX(), _cameras[CAM - 1]->eye.getY(), _cameras[CAM - 1]->eye.getZ(), car->getPosition()->getX(), car->getPosition()->getZ(), car->getPosition()->getY(), 0, 1, 0);
-		}
-		else {
-			lookAt(car->getPosition()->getX() + camX, car->getPosition()->getZ() + camY, car->getPosition()->getY() + camZ, car->getPosition()->getX(), car->getPosition()->getZ(), car->getPosition()->getY(), 0, 1, 0);
-		}
+		lookAt(_cameras[CAM - 1]->eye.getX(), _cameras[CAM - 1]->eye.getY(), _cameras[CAM - 1]->eye.getZ(), car->getPosition()->getX(), car->getPosition()->getZ(), car->getPosition()->getY(), 0, 1, 0);
+
 	}
 	// use our shader
 	glUseProgram(shader.getProgramIndex());
