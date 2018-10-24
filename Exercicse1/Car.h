@@ -11,6 +11,7 @@ class Car : public DynamicObject {
 	double angle, angle_w;
 	int UP, DOWN, RIGHT, LEFT;
 	int vidas = 5;
+	float pontos;
 	float escala;
 	float largura;
 	float comprimento;
@@ -40,6 +41,8 @@ public:
 	bool getColidou();
 	void setVidas(int v);
 	int  getVidas();
+	void setPontos(float v);
+	float  getPontos();
 	void initLights();
 	void onLights();
 	void offLights();

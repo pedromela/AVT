@@ -96,7 +96,7 @@ void Butter::update(double delta) {
 
 void Butter::draw() {
 	pushMatrix(MODEL);
-	translate(MODEL, getPosition()->getX(), getPosition()->getZ(), getPosition()->getY());
+	translate(MODEL, getPosition()->getX() - 0.5f, getPosition()->getZ(), getPosition()->getY() - 0.5f);
 }
 
 void Butter::draw(VSShaderLib shader, GLint vm_uniformId, GLint pvm_uniformId, GLint normal_uniformId)

@@ -33,7 +33,7 @@ Orange::Orange(double x, double y, double z, struct MyMesh *_mesh) : Obstacle(),
 	memcpy(mesh->position, pos, 3 * sizeof(float));
 	mesh->mat.shininess = shininess;
 	mesh->mat.texCount = texcount;
-	createSphere(1.0f, 4);
+	createSphere(1.0f, 8);
 	//createCube();
 }
 Orange::~Orange() {}
@@ -42,8 +42,8 @@ void Orange::update(double delta) {
 	double x = getPosition()->getX(), y = getPosition()->getY(), z = getPosition()->getZ();
 	//printf("%f %f %f\n", x, y, z);
 	
-	if (x >= -2.0 && y >= -2.0 && x <= 21.0 && y <= 21.0) {
-		if (x >= 0.0 && y >= 0.0 && x <= 20.0 && y <= 20.0) {
+	if (x >= -3.0 && y >= -3.0 && x <= 20.0 && y <= 20.0) {
+		if (x >= -1.0 && y >= -1.0 && x <= 19.0 && y <= 19.0) {
 			setPosition(x + getSpeed().getX()*sin(PI*angle / 180)*delta, y + getSpeed().getY()*cos(PI*angle / 180)*delta, z);
 		}
 		else {

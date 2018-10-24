@@ -101,28 +101,24 @@ void Car::setVidas(int v) {
 	vidas = v;
 }
 
+float Car::getPontos() {
+	return pontos;
+}
+
+void Car::setPontos(float v) {
+	pontos = v;
+}
 void Car::update(double delta) {
 	int i = 0;
+	double d;
 	if (HasSpeed() != 0) {
 		angle_w = angle_w + 1;
 		if (angle_w == 360) angle_w = 0;
 	}
 
-	if (colidiu == true)
+	if (colidiu == true) {
 		setSpeed(0, 0, 0);
-	if (RIGHT == 1) {
-		if (UP == 1 || DOWN == 1) {
-			angle = (angle - 1.5);
-			if (angle == 360) angle = 0;
-			if (angle == -360) angle = 0;
-		}
-	}
-	if (LEFT == 1) {
-		if (UP == 1 || DOWN == 1) {
-			angle = (angle + 1.5);
-			if (angle == 360) angle = 0;
-			if (angle == -360) angle = 0;
-		}
+		setPontos(0);
 	}
 	if (UP == 1) {
 		setSpeed(getSpeed().getX() + 0.000025, getSpeed().getY() + 0.000025, 0);
@@ -130,7 +126,32 @@ void Car::update(double delta) {
 	if (DOWN == 1) {
 		setSpeed(getSpeed().getX() - 0.000015, getSpeed().getY() - 0.000015, 0);
 	}
+	if (RIGHT == 1) {
+		/*if (UP == 1 || DOWN == 1) {
+			angle = (angle - 1.5);
+			if (angle == 360) angle = 0;
+			if (angle == -360) angle = 0;
+		}*/
+		d = sqrt((getSpeed().getX() * getSpeed().getX()) + (getSpeed().getY() * getSpeed().getY()));
+		if (d < 2.5)
+			angle = angle - 1000 * d;
+		else
+			angle = angle - 1000 * 2.5;
+	}
+	if (LEFT == 1) {
+		/*if (UP == 1 || DOWN == 1) {
+			angle = (angle + 1.5);
+			if (angle == 360) angle = 0;
+			if (angle == -360) angle = 0;
+		}*/
+		d = sqrt((getSpeed().getX() * getSpeed().getX()) + (getSpeed().getY() * getSpeed().getY()));
+		if (d < 2.5)
+			angle = angle + 1000 * d;
+		else
+			angle = angle + 1000 * 2.5;
+	}
 	setPosition(getPosition()->getX() + getSpeed().getX()*cos(angle*PI / 180)*delta, getPosition()->getY() + getSpeed().getY()*sin(angle*PI / 180)*delta, getPosition()->getZ() + getSpeed().getZ());
+	setPontos(getPontos() + sqrt((getSpeed().getX() * getSpeed().getX()) + (getSpeed().getY() * getSpeed().getY()))*10);
 	if (UP == 0 && DOWN == 0) {
 		if (HasSpeed()) {
 			setSpeed(getSpeed().getX() - getSpeed().getX()*0.05, getSpeed().getY() - getSpeed().getY()*0.05, getSpeed().getZ());

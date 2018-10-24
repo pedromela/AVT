@@ -50,7 +50,7 @@
 #define N_ORANGES 1
 #define N_CHEERIOS 18
 #define N_OBJECTS N_ORANGES+N_BUTTERS+1+N_CHEERIOS*4+((N_CHEERIOS/2) +1)*4+1
-#define CAPTION "AVT Assignment 1"
+#define CAPTION "AVT Project"
 
 // Uniform Buffer for Matrices
 // this buffer will contain 3 matrices: projection, view and model
@@ -160,6 +160,8 @@ Car *car;
 int y = 100;
 int z = 120;
 
+bool pause = false;
+
 void add(GameObject* obj) {
 	_game_objects.push_back(obj);
 }
@@ -193,9 +195,19 @@ void add_cheerioOut(Cheerios* _cheerios) {
 	c_out.push_back(_cheerios);
 }
 
+void togglePause() {
+	if (pause)
+		pause = false;
+	else
+		pause = true;
+}
+
 void restart() {
 	int i = 0;
 	car->setVidas(5);
+	car->setPontos(0);
+	car->setPosition(4, 2, 0.1);
+	car->setSpeed(0, 0, 0);
 	for (i = 0; i < _orange_objects.size(); i++) {
 		_orange_objects[i]->setSpeed(0.002, 0.002, _orange_objects[i]->getSpeed().getZ());
 	}
@@ -217,6 +229,7 @@ void checkCar_Butters() {
 			_butter_objects[i]->setSpeed(car->getSpeed());
 			car->setColidiu(true);
 			car->setSpeed(0, 0, 0);
+			car->setPontos(0);
 			count++;
 		}
 	}
@@ -273,6 +286,7 @@ void checkCar_Oranges() {
 				car->setPosition(4, 2, 0.1);
 				car->setAngle(0);
 				car->setVidas(car->getVidas() - 1);
+				car->setPontos(0);
 			}
 			else { restart();}
 		}
@@ -598,21 +612,23 @@ void genVAOsAndUniformBuffer(const aiScene *sc) {
 	}
 }
 void update(int value) {
-	car->update(value);
-	for (int i = 0; i < _game_objects.size(); i++)
-		_game_objects[i]->update(value);
-	if (CAM == 3) {
-		//printf("CAM 3 %d\n", value);
-		_cameras[2]->update(value);
-		_cameras[2]->setRaio(r);
+	if (!pause) {
+		car->update(value);
+		for (int i = 0; i < _game_objects.size(); i++)
+			_game_objects[i]->update(value);
+		if (CAM == 3) {
+			//printf("CAM 3 %d\n", value);
+			_cameras[2]->update(value);
+			_cameras[2]->setRaio(r);
+		}
+		checkAllCollisions();
 	}
-	checkAllCollisions();
 }
 
 void timer(int value)
 {
 	std::ostringstream oss;
-	oss << CAPTION << ": " << FrameCount << " FPS @ (" << WinX << "x" << WinY << ")";
+	oss << CAPTION << ": " << car->getVidas() << " lifes, " << (int)car->getPontos() << " points";
 	std::string s = oss.str();
 	glutSetWindow(WindowHandle);
 	glutSetWindowTitle(s.c_str());
@@ -624,7 +640,7 @@ void timer(int value)
 void refresh(int value)
 {
 	std::ostringstream oss;
-	oss << CAPTION << ": " << FrameCount << " FPS @ (" << WinX << "x" << WinY << ")";
+	oss << CAPTION << ": " << car->getVidas() << " lifes, " << (int)car->getPontos() << " points";
 	std::string s = oss.str();
 	glutSetWindow(WindowHandle);
 	glutSetWindowTitle(s.c_str());
@@ -891,6 +907,18 @@ void processKeys(unsigned char key, int xx, int yy)
 			break;
 		case 'A':
 			DOWN = 1;
+			break;
+		case 'r':
+			restart();
+			break;
+		case 'R':
+			restart();
+			break;
+		case 's':
+			togglePause();
+			break;
+		case 'S':
+			togglePause();
 			break;
 	}
 	car->setDir(UP, DOWN, RIGHT, LEFT);
