@@ -832,8 +832,8 @@ void renderScene(void) {
 
 		// Render mesh
 
-		if (i == 0) glUniform1i(texMode_uniformId, 0); // modulate Phong color with texel color
-		else if (i == 1) glUniform1i(texMode_uniformId, 1); // só componente especular
+		if (i%2 == 0) glUniform1i(texMode_uniformId, 0); // modulate Phong color with texel color
+		else if (i%3 == 1) glUniform1i(texMode_uniformId, 1); // só componente especular
 		else glUniform1i(texMode_uniformId, 2); // multitexturing
 
 		glBindVertexArray(_game_objects[i]->mesh->vao);
@@ -1069,6 +1069,7 @@ GLuint setupShaders() {
 
 	glLinkProgram(shader.getProgramIndex());
 
+	texMode_uniformId = glGetUniformLocation(shader.getProgramIndex(), "texMode"); // different modes of texturing
 	pvm_uniformId = glGetUniformLocation(shader.getProgramIndex(), "m_pvm");
 	vm_uniformId = glGetUniformLocation(shader.getProgramIndex(), "m_viewModel");
 	normal_uniformId = glGetUniformLocation(shader.getProgramIndex(), "m_normal");

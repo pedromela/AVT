@@ -70,7 +70,7 @@ Butter::Butter(double x, double y, double z, MyMesh * _mesh)
 	float pos[3] = { 0.0f, 0.0f, 0.0f };
 
 	float shininess = 100.0f;
-	int texcount = 0;
+	int texcount = 3;
 	mesh = _mesh;
 	memcpy(mesh->mat.ambient, amb2, 4 * sizeof(float));
 	memcpy(mesh->mat.diffuse, diff2, 4 * sizeof(float));
