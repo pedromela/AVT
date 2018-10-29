@@ -1,12 +1,13 @@
-#include <GL/glew.h>
+#pragma warning(disable : 4996)
+#include "Dependencies/glew/glew.h"
 #include <stdlib.h>
-#include <GL/freeglut.h>
+#include "Dependencies/freeglut/freeglut.h"
 #include <stdio.h>
 #include "TGA.h"
 
 //extern GLuint TextureArray[2];
 
-void TGA_Texture(unsigned int *textureArray, char *strFileName, int ID)
+void TGA_Texture(unsigned int *textureArray, const char *strFileName, int ID)
 {
 	tImageTGA *pBitMap;
 	int textureType;
@@ -44,7 +45,7 @@ void TGA_Texture(unsigned int *textureArray, char *strFileName, int ID)
 }
 
 
-tImageTGA *Load_TGA(char *strfilename)
+tImageTGA *Load_TGA(const char *strfilename)
 {
 	//tImageTGA *pImgData	= NULL;		
 	//	FILE *pFile			= NULL;	
@@ -204,3 +205,13 @@ tImageTGA *Load_TGA(char *strfilename)
 	
 	return pImgData;
 } // End of Load_TGA function
+
+
+TGA::TGA()
+{
+}
+
+
+TGA::~TGA()
+{
+}

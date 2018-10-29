@@ -139,6 +139,7 @@
     <ClCompile Include="Roadside.cpp" />
     <ClCompile Include="StaticObject.cpp" />
     <ClCompile Include="Table.cpp" />
+    <ClCompile Include="TGA.cpp" />
     <ClCompile Include="Vector3.cpp" />
     <ClCompile Include="vsShaderLib.cpp" />
   </ItemGroup>
@@ -166,6 +167,7 @@
     <ClInclude Include="StaticObject.h" />
     <ClInclude Include="Table.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TGA.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="VertexAttrDef.h" />
     <ClInclude Include="vsShaderLib.h" />
