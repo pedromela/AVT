@@ -6,6 +6,7 @@ Cheerios::Cheerios() {
 	setPosition(0, 0, 0);
 	setRaio(0.15);
 	setSpeed(0, 0, 0);
+	setTexMd(2);
 	mate.defineMaterial(amb, diff, spec, shine);
 }
 
@@ -14,6 +15,7 @@ Cheerios::Cheerios(double x, double y, double z) {
 	setPosition(x, y, z);
 	setRaio(0.15);
 	setSpeed(0, 0, 0);
+	setTexMd(2);
 	mate.defineMaterial(amb, diff, spec, shine);
 }
 
@@ -23,6 +25,7 @@ Cheerios::Cheerios(double x, double y, double z, struct MyMesh * _mesh)
 	setPosition(x, y, z);
 	setRaio(0.15);
 	setSpeed(0, 0, 0);
+	setTexMd(2);
 	mesh = _mesh;
 	float amb2[4] = { 0.74f,0.74f,0.0f,1.0f };
 	float diff2[4] = { 0.5f,0.5f,0.4f,1.0f };

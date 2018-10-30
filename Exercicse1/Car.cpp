@@ -8,6 +8,7 @@ Car::Car() : DynamicObject(), angle(0.0), UP(0), DOWN(0), RIGHT(0), LEFT(0) {
 	comprimento = 5.0 * escala;
 	setRaio(comprimento);
 	lights = false;
+	setTexMd(4);
 	//glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT);
 	mate.defineMaterial(amb, diff, spec, shine);
 }
@@ -24,6 +25,7 @@ Car::Car(double x, double y, double z) : DynamicObject() {
 	setRaio((comprimento / 2));
 	colidiu = false;
 	lights = false;
+	setTexMd(4);
 	//glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT);
 	//mate.defineMaterial(amb, diff, spec, shine);
 	//initLights();
@@ -40,6 +42,7 @@ Car::Car(double x, double y, double z, struct MyMesh *_mesh) : DynamicObject()
 	setRaio((comprimento / 2));
 	colidiu = false;
 	lights = false;
+	setTexMd(4);
 	float pos[] = { 0.0f, 0.0f, 0.0f };
 	float amb[] = { 0.2f, 0.15f, 0.1f, 1.0f };
 	float diff[] = { 0.2f, 0.6f, 0.4f, 1.0f };

@@ -25,6 +25,7 @@ Orange::Orange(double x, double y, double z, struct MyMesh *_mesh) : Obstacle(),
 	setPosition(x, y, z);
 	setSpeed(0.002, 0.002, getSpeed().getZ());
 	setRaio(0.5);
+	setTexMd(1);
 	mesh = _mesh;
 	memcpy(mesh->mat.ambient, amb, 4 * sizeof(float));
 	memcpy(mesh->mat.diffuse, diff, 4 * sizeof(float));

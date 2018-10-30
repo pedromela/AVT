@@ -54,6 +54,7 @@ Butter::Butter(double x, double y, double z) : angle(rand() % 180) {
 	tamanho = 0.75;
 	setRaio((tamanho*tamanho) + ((tamanho / 2)*(tamanho / 2)));
 	setSpeed(0, 0, 0);
+	setTexMd(3);
 	//mate.defineMaterial(amb, diff, spec, shine);
 }
 
@@ -62,6 +63,7 @@ Butter::Butter(double x, double y, double z, MyMesh * _mesh)
 	setPosition(x, y, z);
 	tamanho = 0.75;
 	setRaio((tamanho*tamanho) + ((tamanho / 2)*(tamanho / 2)));
+	setTexMd(3);
 	setSpeed(0, 0, 0);
 	float amb2[4] = { 0.74f,0.74f,0.0f,1.0f };
 	float diff2[4] = { 0.5f,0.5f,0.4f,1.0f };

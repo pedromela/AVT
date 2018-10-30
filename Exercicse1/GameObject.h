@@ -20,6 +20,7 @@ class GameObject : public Entity {
 	double _xm, _xM, _ym, _yM;
 	double raio, collision_agle;
 	int _tex;
+	int texMd;
 	VSShaderLib shader;
 	GLint pvm_uniformId;
 	GLint vm_uniformId;
@@ -37,6 +38,7 @@ public:
 	virtual void draw(double angle, double px, double py);
 	virtual void update(double delta);
 	bool Colision(GameObject* obj, double angle, double _obj_angle);
+	bool Colision(GameObject* obj);
 	void setRaio(float _r) { raio = _r; }
 	double getRaio() { return raio; }
 	void setCollisionAngle(double _a);
@@ -47,6 +49,8 @@ public:
 	double getYm();
 	double getYM();
 	int getTex();
+	int getTexMd();
+	void setTexMd(int t);
 	void setTex(int tex);
 };
 #endif

@@ -16,6 +16,7 @@ Table::Table(double x, double y, double z, MyMesh * _mesh)
 	tamanho = 0.75;
 	setRaio((tamanho*tamanho) + ((tamanho / 2)*(tamanho / 2)));
 	setSpeed(0, 0, 0);
+	setTexMd(0);
 	float amb2[4] = { 0.7f,0.0f,0.00f,1.0f };
 	float diff2[4] = { 0.5f,0.5f,0.4f,1.0f };
 	float spec2[4] = { 0.7f,0.7f,0.04f,1.0f };

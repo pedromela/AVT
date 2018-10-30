@@ -229,7 +229,7 @@ void checkCar_Butters() {
 	int i, count = 0;
 
 	for (i = 0; i < _butter_objects.size(); i++) {
-		if (car->Colision(_butter_objects[i], car->getAngle(), _butter_objects[i]->getAngle())) {
+		if (car->Colision(_butter_objects[i])) {
 			std::cout << "MANTEIGA" << std::endl;
 			_butter_objects[i]->setCollisionAngle(car->getAngle());
 			_butter_objects[i]->setSpeed(car->getSpeed());
@@ -253,7 +253,7 @@ void checkCar_Cheerios() {
 	for (i = 0; i < size_in; i++) {
 		_cheer = c_in[i];
 
-		if (car->Colision(_cheer, car->getAngle(), 0)) {
+		if (car->Colision(_cheer)) {
 			car->setColidiu(true);
 			std::cout << "CHEERIO" << std::endl;
 			_cheer->setCollisionAngle(car->getAngle());
@@ -267,7 +267,7 @@ void checkCar_Cheerios() {
 	for (i = 0; i < size_out; i++) {
 		_cheer = c_out[i];
 
-		if (car->Colision(_cheer, car->getAngle(), 0)) {
+		if (car->Colision(_cheer)) {
 			car->setColidiu(true);
 			std::cout << "CHEERIO" << std::endl;
 			_cheer->setCollisionAngle(car->getAngle());
@@ -284,7 +284,7 @@ void checkCar_Oranges() {
 	int i;
 
 	for (i = 0; i < _orange_objects.size(); i++) {
-		if (car->Colision(_orange_objects[i], car->getAngle(), 0)) {
+		if (car->Colision(_orange_objects[i])) {
 			if (car->getVidas() > 0) {
 				std::cout << "LARANJA" << std::endl;
 				std::cout << "RESET" << std::endl;
@@ -832,9 +832,18 @@ void renderScene(void) {
 
 		// Render mesh
 
-		if (i%2 == 0) glUniform1i(texMode_uniformId, 0); // modulate Phong color with texel color
+		int texMd = _game_objects[i]->getTexMd();
+
+		/*if (i == 4) glUniform1i(texMode_uniformId, 4); // só componente especular
+		else if (i%2 == 0) glUniform1i(texMode_uniformId, 0); // modulate Phong color with texel color
 		else if (i%3 == 1) glUniform1i(texMode_uniformId, 1); // só componente especular
-		else glUniform1i(texMode_uniformId, 2); // multitexturing
+		else glUniform1i(texMode_uniformId, 2); // multitexturing*/
+		if(texMd == 0) glUniform1i(texMode_uniformId, 4);
+		else if(texMd == 1) glUniform1i(texMode_uniformId, 1);
+		else if (texMd == 2) glUniform1i(texMode_uniformId, 0);
+		else if (texMd == 3) glUniform1i(texMode_uniformId, 3);
+		else if (texMd == 4) glUniform1i(texMode_uniformId, 4);
+		else glUniform1i(texMode_uniformId, 5);
 
 		glBindVertexArray(_game_objects[i]->mesh->vao);
 

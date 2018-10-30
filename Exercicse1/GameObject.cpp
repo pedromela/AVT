@@ -30,11 +30,39 @@ bool GameObject::Colision(GameObject* obj, double angle, double _obj_angle) {
 
 }
 
+bool GameObject::Colision(GameObject* obj) {
+	double x = getPosition()->getX();
+	double y = getPosition()->getY();
+	double r = sqrt(getRaio());
+
+	double x_obj = obj->getPosition()->getX();
+	double y_obj = obj->getPosition()->getY();
+	double r_obj = obj->getRaio();
+
+	double d = sqrt((x - x_obj)*(x - x_obj) + (y - y_obj)*(y - y_obj));
+
+	double sum_r_r_obj = sqrt(r*r + r_obj * r_obj);
+
+	if (d <= sum_r_r_obj)
+		return true;
+	else
+		return false;
+
+
+}
+
 int GameObject::getTex() {
 	return _tex;
 }
 void GameObject::setTex(int tex) {
 	_tex = tex;
+}
+
+int GameObject::getTexMd() {
+	return texMd;
+}
+void GameObject::setTexMd(int t) {
+	texMd = t;
 }
 void GameObject::setCollisionAngle(double _a) {
 	collision_agle = _a;
