@@ -28,6 +28,7 @@
 #include "Header.h"
 #include "Table.h"
 #include "Car.h"
+#include "Minimap.h"
 #include "Roadside.h"
 #include "ImageRgb.h"
 #include "Orange.h"
@@ -620,13 +621,23 @@ void genVAOsAndUniformBuffer(const aiScene *sc) {
 void update(int value) {
 	if (!pause) {
 		car->update(value);
+		_game_objects[N_ORANGES + N_BUTTERS + 1]->setPosition(car->getPosition()->getX(), car->getPosition()->getY(), car->getPosition()->getZ());
 		for (int i = 0; i < _game_objects.size(); i++)
 			_game_objects[i]->update(value);
 		if (CAM == 3) {
 			//printf("CAM 3 %d\n", value);
 			_cameras[2]->update(value);
 			_cameras[2]->setRaio(r);
+			//_game_objects[N_ORANGES + N_BUTTERS + 1]->setPosition(_cameras[CAM - 1]->eye.getX()- car->getPosition()->getX(), _cameras[CAM - 1]->eye.getY()- car->getPosition()->getY(), _cameras[CAM - 1]->eye.getZ()- car->getPosition()->getZ());
 		}
+		else if(CAM == 2){
+			//_game_objects[N_ORANGES + N_BUTTERS + 1]->setPosition(18, 9, 0);
+		}
+		else{
+			//_game_objects[N_ORANGES + N_BUTTERS + 1]->setPosition(0, 9, 0);
+			
+		}
+
 		checkAllCollisions();
 	}
 }
@@ -748,6 +759,48 @@ void renderScene(void) {
 		loadIdentity(MODEL);
 		// set the camera using a function similar to gluLookAt
 		lookAt(0, 18, 0, 0, 9, 0, 9, 1, 0);
+		//loadIdentity(PROJECTION);
+		/*if (WinX <= WinY)
+			//ortho(-2.0, 2.0, -2.0*(GLfloat)WinY / (GLfloat)WinX,
+			//	2.0*(GLfloat)WinY / (GLfloat)WinX, 10, 10);
+			ortho(-3.0f, 21.0f, -3.0f, 21.0f, 10, 10);
+		else
+			ortho(-2.0*(GLfloat)WinX / (GLfloat)WinY,
+				2.0*(GLfloat)WinX / (GLfloat)WinY, -2.0, 2.0, -10, 10);
+			//ortho(-3.0f, 21.0f, -3.0f, 21.0f, -40.0f, 40.0f);
+
+		// load identity matrices for Model-View
+		loadIdentity(VIEW);
+		loadIdentity(MODEL);*/
+
+		//glUseProgram(shader.getProgramIndex());
+
+		//objId = _game_objects.size()-2;  //cube
+		/*objId = 114;  //cube-114
+
+		//rotate(MODEL, 90.0f, 0.0f, 45.0f, 1.0);
+		//translate(MODEL, -0.5f, -0.5f, -0.5f);
+		// send matrices to OGL
+		computeDerivedMatrix(PROJ_VIEW_MODEL);
+		glUniformMatrix4fv(vm_uniformId, 1, GL_FALSE, mCompMatrix[VIEW_MODEL]);
+		glUniformMatrix4fv(pvm_uniformId, 1, GL_FALSE, mCompMatrix[PROJ_VIEW_MODEL]);
+		computeNormalMatrix3x3();
+		glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
+
+		glClear(GL_STENCIL_BUFFER_BIT);
+
+		glStencilFunc(GL_NEVER, 0x1, 0x1);
+		glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
+
+		glBindVertexArray(_game_objects[objId]->mesh->vao);
+		glDrawElements(mesh[objId].type, mesh[objId].numIndexes, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		// set the projection matrix
+		//ratio = (1.0f * WinX) / WinY;
+		loadIdentity(PROJECTION);
+		//perspective(30.0f, ratio, 0.1f, 1000.0f);*/
+
 	}
 	if (CAM == 2) {
 		loadIdentity(PROJECTION);
@@ -820,6 +873,7 @@ void renderScene(void) {
 		loc = glGetUniformLocation(shader.getProgramIndex(), "mat.shininess");
 		glUniform1f(loc, _game_objects[i]->mesh->mat.shininess);
 
+
 		_game_objects[i]->draw();
 		
 		// send matrices to OGL
@@ -829,6 +883,28 @@ void renderScene(void) {
 		glUniformMatrix4fv(pvm_uniformId, 1, GL_FALSE, mCompMatrix[PROJ_VIEW_MODEL]);
 		computeNormalMatrix3x3();
 		glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
+
+		//dentro do filtro
+		/*if (i >= N_ORANGES + 1 && i < N_ORANGES + N_BUTTERS + 1) {
+			glStencilFunc(GL_EQUAL, 0x1, 0x1);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		}*/
+		if (i == _game_objects.size()-1) {
+			glStencilFunc(GL_EQUAL, 0x1, 0x1);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		}
+		//filtro
+		else if (i == N_ORANGES + N_BUTTERS + 1) {
+			glClear(GL_STENCIL_BUFFER_BIT);
+			glStencilFunc(GL_NEVER, 0x1, 0x1);
+			glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
+		}
+		//fora e dentro do filtro
+		else {
+			// draw the tori where the stencil is not 1 
+			glStencilFunc(GL_ALWAYS, 0x1, 0x1);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		}
 
 		// Render mesh
 
@@ -1127,8 +1203,8 @@ void init()
 	camY = r * sin(beta * 3.14f / 180.0f);
 	
 	float pos[] = { 0.0f, 0.0f, 0.0f };
-	float amb[] = { 0.2f, 0.15f, 0.1f, 1.0f };
-	float diff[] = { 0.8f, 0.6f, 0.4f, 1.0f };
+	float amb[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	float diff[] = { 0.6f, 0.6f, 0.6f, 1.0f };
 	float spec[] = { 0.8f, 0.8f, 0.8f, 1.0f };
 	float emissive[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	float shininess = 100.0f;
@@ -1136,27 +1212,32 @@ void init()
 	//add_orange(new Orange(rand() % 21 - 1.5, rand() % 21 - 1.5, 0.5));
 	objId = 0;
 	car = new Car(4, 2, 0.1);
+	objId++;
 	//add(car);
-	float amb1[4] = { 1.0f,0.11f,0.0f,1.0f };
-	float diff1[4] = { 0.88f,0.69f,0.0f,1.0f };
-	float spec1[4] = { 0.26f,0.46f,0.09f,1.0f };
+	float amb1[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	float diff1[4] = { 0.88f,0.88f,0.88f,1.0f };
+	float spec1[4] = { 0.46f,0.46f,0.46f,1.0f };
 	shininess = 64.0f;
-	for (int i = 0; i <= N_ORANGES; i++) {
+	for (int i = 1; i <= N_ORANGES+1; i++) {
 		objId = i;
 		Orange *o = new Orange(rand() % 21 - 1.5, rand() % 21 - 1.5, 0.5, &mesh[objId]);
 		add(o);
 		add_orange(o);
 	}
-	float amb2[4] = { 0.74f,0.74f,0.0f,1.0f };
-	float diff2[4] = { 0.5f,0.5f,0.4f,1.0f };
-	float spec2[4] = { 0.7f,0.7f,0.04f,1.0f };
+	float amb2[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	float diff2[4] = { 0.5f,0.5f,0.5f,1.0f };
+	float spec2[4] = { 0.7f,0.7f,0.7f,1.0f };
 	shininess=100.0;
-	for (int i = N_ORANGES+1; i <= N_ORANGES + N_BUTTERS; i++) {
+	for (int i = N_ORANGES+2; i <= N_ORANGES + N_BUTTERS+1; i++) {
 		objId = i;
 		Butter *b = new Butter(rand() % 19, rand() % 19, 0.4, &mesh[objId]);
 		add(b);
 		add_butter(b);
 	}
+
+	objId = N_ORANGES + N_BUTTERS + 2;
+	Minimap *mm = new Minimap(0, 0, 0, &mesh[objId]);
+	add(mm);
 
 	float comprimento = N_CHEERIOS;
 	float comp_pist_out = N_CHEERIOS;
@@ -1167,7 +1248,7 @@ void init()
 	float inc = 1;
 
 	float ini_out = 0, ini_in = ini_out + 4, position_x = 0, position_y = 0, z = 0.15;
-	objId = N_ORANGES + N_BUTTERS+1;
+	objId++;
 	/*Cheerios Outside*/
 	Cheerios *c;
 	for (i = 1; i <= n_cheer_out;) {
@@ -1251,8 +1332,19 @@ void init()
 		position_y = position_y + inc;
 	}
 	//Roadside *r = new Roadside(18, &mesh[objId]);
+	//std::cout << objId;
 	Table *t = new Table(-1,-1,-20, &mesh[objId]);
 	add(t);
+
+	/*objId++;
+	memcpy(mesh[objId].mat.ambient, amb1, 4 * sizeof(float));
+	memcpy(mesh[objId].mat.diffuse, diff1, 4 * sizeof(float));
+	memcpy(mesh[objId].mat.specular, spec1, 4 * sizeof(float));
+	memcpy(mesh[objId].mat.emissive, emissive, 4 * sizeof(float));
+	mesh[objId].mat.shininess = shininess;
+	mesh[objId].mat.texCount = texcount;
+	createCube();*/
+
 	//add_road(r);
 	add_cam(new OrthogonalCamera(-1.0, 21.0, -1.0, 21.0, -4.0, 4.0));
 	add_cam(new PerspectiveCamera(45, 1, 1, 50));
@@ -1262,6 +1354,8 @@ void init()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_MULTISAMPLE);
+	glClearStencil(0x0);
+	glEnable(GL_STENCIL_TEST);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 }
@@ -1282,7 +1376,7 @@ int main(int argc, char **argv) {
 
 //  GLUT initialization
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA|GLUT_MULTISAMPLE);
+	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA|GLUT_STENCIL|GLUT_MULTISAMPLE);
 
 	glutInitContextVersion (3, 3);
 	glutInitContextProfile (GLUT_CORE_PROFILE );
