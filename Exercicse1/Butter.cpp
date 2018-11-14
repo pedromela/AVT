@@ -65,10 +65,10 @@ Butter::Butter(double x, double y, double z, MyMesh * _mesh)
 	setRaio((tamanho*tamanho) + ((tamanho / 2)*(tamanho / 2)));
 	setTexMd(3);
 	setSpeed(0, 0, 0);
-	float amb2[4] = { 0.74f,0.74f,0.0f,1.0f };
-	float diff2[4] = { 0.5f,0.5f,0.4f,1.0f };
-	float spec2[4] = { 0.7f,0.7f,0.04f,1.0f };
-	float emissive[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float amb2[4] = { 0.74f,0.74f,0.0f,0.2f };
+	float diff2[4] = { 0.5f,0.5f,0.4f,0.2f };
+	float spec2[4] = { 0.7f,0.7f,0.04f,0.2f };
+	float emissive[4] = { 0.0f, 0.0f, 0.0f, 12.0f };
 	float pos[3] = { 0.0f, 0.0f, 0.0f };
 
 	float shininess = 100.0f;

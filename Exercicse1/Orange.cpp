@@ -43,13 +43,8 @@ void Orange::update(double delta) {
 	double x = getPosition()->getX(), y = getPosition()->getY(), z = getPosition()->getZ();
 	//printf("%f %f %f\n", x, y, z);
 	
-	if (x >= -3.0 && y >= -3.0 && x <= 20.0 && y <= 20.0) {
-		if (x >= -1.0 && y >= -1.0 && x <= 19.0 && y <= 19.0) {
-			setPosition(x + getSpeed().getX()*sin(PI*angle / 180)*delta, y + getSpeed().getY()*cos(PI*angle / 180)*delta, z);
-		}
-		else {
-			setPosition(x + getSpeed().getX()*sin(PI*angle / 180)*delta/3, y + getSpeed().getY()*cos(PI*angle / 180)*delta/3, z - 0.1);
-		}
+	if (x >= -1.0 && y >= -1.0 && x <= 19.0 && y <= 19.0) {
+		setPosition(x + getSpeed().getX()*sin(PI*angle / 180)*delta, y + getSpeed().getY()*cos(PI*angle / 180)*delta, z);
 	}
 	else {
 		z = 0.5;
@@ -80,18 +75,5 @@ void Orange::draw() {
 	pushMatrix(MODEL);
 	translate(MODEL, getPosition()->getX(), getPosition()->getZ(), getPosition()->getY());
 	//if (i == 0 && angle > 0 && angle < 180) {
-	//	rotate(MODEL, angle, 0, 1, 0);
-	//	rotate(MODEL, angleZ++, 1, 0, 0);
-
-	//}
-	if (angle > 0 && angle < 180) {
-		rotate(MODEL, angle, 0, 1, 0);
-		rotate(MODEL, angleZ++, 1, 0, 0);
-
-	}
-	if (angle >= 180 && angle <= 360) {
-		rotate(MODEL, angle, 0, -1, 0);
-		rotate(MODEL, angleZ++, -1, 0, 0);
-	}
-	angleZ++;
+	rotate(MODEL, angle+90.0f, 0, 1, 0);
 }

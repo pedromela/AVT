@@ -860,9 +860,12 @@ void renderScene(void) {
 	glUniform1i(tex_loc1, 1);
 	glUniform1i(tex_loc2, 2);
 
-	for (int i = 0; i < _game_objects.size(); i++) {
+	for (int i = N_ORANGES+1; i < _game_objects.size(); i++) {
 		// send the material
 		//pushMatrix(MODEL); // don in obj->draw()
+
+		glDepthMask(GL_TRUE);
+		glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
 
 		loc = glGetUniformLocation(shader.getProgramIndex(), "mat.ambient");
 		glUniform4fv(loc, 1, _game_objects[i]->mesh->mat.ambient);
@@ -885,20 +888,26 @@ void renderScene(void) {
 		glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
 
 		//dentro do filtro
-		/*if (i >= N_ORANGES + 1 && i < N_ORANGES + N_BUTTERS + 1) {
-			glStencilFunc(GL_EQUAL, 0x1, 0x1);
-			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		}*/
-		if (i == _game_objects.size()-1) {
+		if (i >= N_ORANGES + 1 && i < N_ORANGES + N_BUTTERS + 1) {
 			glStencilFunc(GL_EQUAL, 0x1, 0x1);
 			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		}
+		/*if (i == _game_objects.size()-1) {
+			glStencilFunc(GL_EQUAL, 0x1, 0x1);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		}*/
 		//filtro
 		else if (i == N_ORANGES + N_BUTTERS + 1) {
 			glClear(GL_STENCIL_BUFFER_BIT);
 			glStencilFunc(GL_NEVER, 0x1, 0x1);
 			glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
 		}
+		/*else if(i >= 0 && i <= N_ORANGES){
+			//glDepthMask(GL_FALSE);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glStencilFunc(GL_ALWAYS, 0x1, 0x1);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		}*/
 		//fora e dentro do filtro
 		else {
 			// draw the tori where the stencil is not 1 
@@ -932,12 +941,69 @@ void renderScene(void) {
 
 		popMatrix(MODEL);
 	}
-	//pushMatrix(MODEL);
+	
+	for (int i = 0; i <= N_ORANGES; i++) {
+		// send the material
+		//pushMatrix(MODEL); // don in obj->draw()
 
-	//translate(MODEL, 0, 0, 0);
-	//rotate(MODEL, 180, 0, 1, 0);
+		loc = glGetUniformLocation(shader.getProgramIndex(), "mat.ambient");
+		glUniform4fv(loc, 1, _game_objects[i]->mesh->mat.ambient);
+		loc = glGetUniformLocation(shader.getProgramIndex(), "mat.diffuse");
+		glUniform4fv(loc, 1, _game_objects[i]->mesh->mat.diffuse);
+		loc = glGetUniformLocation(shader.getProgramIndex(), "mat.specular");
+		glUniform4fv(loc, 1, _game_objects[i]->mesh->mat.specular);
+		loc = glGetUniformLocation(shader.getProgramIndex(), "mat.shininess");
+		glUniform1f(loc, _game_objects[i]->mesh->mat.shininess);
+
+
+		_game_objects[i]->draw();
+
+		// send matrices to OGL
+		//printf("%f %f %f %f\n", i, _orange_objects[i]->getPosition()->getY(), _orange_objects[i]->getPosition()->getY(), _orange_objects[i]->getPosition()->getZ());
+		computeDerivedMatrix(PROJ_VIEW_MODEL);
+		glUniformMatrix4fv(vm_uniformId, 1, GL_FALSE, mCompMatrix[VIEW_MODEL]);
+		glUniformMatrix4fv(pvm_uniformId, 1, GL_FALSE, mCompMatrix[PROJ_VIEW_MODEL]);
+		computeNormalMatrix3x3();
+		glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
+
+		glDepthMask(GL_FALSE);
+		glBlendFunc(GL_DST_ALPHA, GL_DST_ALPHA);
+		glStencilFunc(GL_ALWAYS, 0x1, 0x1);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		
+
+		// Render mesh
+
+		int texMd = _game_objects[i]->getTexMd();
+
+		/*if (i == 4) glUniform1i(texMode_uniformId, 4); // só componente especular
+		else if (i%2 == 0) glUniform1i(texMode_uniformId, 0); // modulate Phong color with texel color
+		else if (i%3 == 1) glUniform1i(texMode_uniformId, 1); // só componente especular
+		else glUniform1i(texMode_uniformId, 2); // multitexturing*/
+		if (texMd == 0) glUniform1i(texMode_uniformId, 4);
+		else if (texMd == 1) glUniform1i(texMode_uniformId, 1);
+		else if (texMd == 2) glUniform1i(texMode_uniformId, 0);
+		else if (texMd == 3) glUniform1i(texMode_uniformId, 3);
+		else if (texMd == 4) glUniform1i(texMode_uniformId, 4);
+		else glUniform1i(texMode_uniformId, 5);
+
+		glBindVertexArray(_game_objects[i]->mesh->vao);
+
+		if (!shader.isProgramValid()) {
+			printf("Program Not Valid!\n");
+			exit(1);
+		}
+		glDrawElements(_game_objects[i]->mesh->type, _game_objects[i]->mesh->numIndexes, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		popMatrix(MODEL);
+	}
+
+	glUniform1i(texMode_uniformId, 4);
+	glDepthMask(GL_TRUE);
+	glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
+
 	car->draw();
-	//glUniform1i(texUnit, 0);
 	
 	recursive_render(scene, scene->mRootNode);
 	popMatrix(MODEL);
@@ -1218,7 +1284,7 @@ void init()
 	float diff1[4] = { 0.88f,0.88f,0.88f,1.0f };
 	float spec1[4] = { 0.46f,0.46f,0.46f,1.0f };
 	shininess = 64.0f;
-	for (int i = 1; i <= N_ORANGES+1; i++) {
+	for (int i = objId; i <= N_ORANGES+1; i++) {
 		objId = i;
 		Orange *o = new Orange(rand() % 21 - 1.5, rand() % 21 - 1.5, 0.5, &mesh[objId]);
 		add(o);
@@ -1228,14 +1294,15 @@ void init()
 	float diff2[4] = { 0.5f,0.5f,0.5f,1.0f };
 	float spec2[4] = { 0.7f,0.7f,0.7f,1.0f };
 	shininess=100.0;
-	for (int i = N_ORANGES+2; i <= N_ORANGES + N_BUTTERS+1; i++) {
+	int aux = objId+1;
+	for (int i = aux; i < aux + N_BUTTERS; i++) {
 		objId = i;
 		Butter *b = new Butter(rand() % 19, rand() % 19, 0.4, &mesh[objId]);
 		add(b);
 		add_butter(b);
 	}
 
-	objId = N_ORANGES + N_BUTTERS + 2;
+	objId++;
 	Minimap *mm = new Minimap(0, 0, 0, &mesh[objId]);
 	add(mm);
 
@@ -1357,7 +1424,7 @@ void init()
 	glClearStencil(0x0);
 	glEnable(GL_STENCIL_TEST);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
+	glEnable(GL_BLEND);
 }
 
 
