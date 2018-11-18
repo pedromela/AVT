@@ -153,7 +153,9 @@ static const std::string modelname = "carro.obj";
 
 int tree_quad_index = 0;
 
-std::vector<struct MyMesh> mesh(N_OBJECTS+1);
+int particle_quad_index = 0;
+
+std::vector<struct MyMesh> mesh(N_OBJECTS+2);
 std::vector<struct MyMesh> myMeshes;
 
 //struct MyMesh mesh[N_OBJECTS];
@@ -774,9 +776,9 @@ void iniParticulas(void)
 		phi = frand()*M_PI;
 		theta = 2.0*frand()*M_PI;
 
-		particula[i].x = 0.0f;
+		particula[i].x = 9.0f;
 		particula[i].y = 10.0f;
-		particula[i].z = 0.0f;
+		particula[i].z = 9.0f;
 		particula[i].vx = v * cos(theta) * sin(phi);
 		particula[i].vy = v * cos(phi);
 		particula[i].vz = v * sin(theta) * sin(phi);
@@ -826,161 +828,6 @@ void iterate(int value)
 // Render stufff
 //
 
-void renderSceneBillboard(void) {
-
-	GLint loc;
-	float modelview[16];  //To be used in "Cheating" Matrix reset Billboard technique
-
-	FrameCount++;
-
-	float pos[3], right[3], up[3];
-	float particle_color[4];
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-
-	float cam[3] = { _cameras[CAM - 1]->getPosition()->getX(), _cameras[CAM - 1]->getPosition()->getZ(), _cameras[CAM - 1]->getPosition()->getY() };
-
-	loadIdentity(MODEL);
-	loadIdentity(VIEW);
-
-
-
-	// use our shader
-	glUseProgram(shader.getProgramIndex());
-
-	//Associar os Texture Units aos Objects Texture
-	//TU0 will be used to store tree.tga OR particle.bmp: there is no multexturing in this demo
-
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, TextureArray[3]);  //tree.tga associated to TU0
-
-	glUniform1i(tex_loc, 3);
-
-	float res[4];
-	multMatrixPoint(VIEW, lightPos, res);   //lightPos definido em World Coord so it is converted to eye space
-	glUniform4fv(lPos_uniformId, 1, res);
-
-	objId = 0;  //quad
-
-
-	//Draw trees billboards
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glUniform1i(texMode_uniformId, 3); // draw textured quads
-
-	for (int i = -5; i < 5; i++)
-		for (int j = -5; j < 5; j++) {
-			pushMatrix(MODEL);
-			translate(MODEL, 5 + i * 10.0, 0, 5 + j * 10.0);
-
-			pos[0] = 5 + i * 10.0; pos[1] = 0; pos[2] = 5 + j * 10.0;
-
-			if (type == 2)
-				l3dBillboardSphericalBegin(cam, pos);
-			else if (type == 3)
-				l3dBillboardCylindricalBegin(cam, pos);
-
-			objId = 5;  //quad for tree
-
-			//diffuse and ambient color are not used in the tree quads
-			loc = glGetUniformLocation(shader.getProgramIndex(), "mat.specular");
-			glUniform4fv(loc, 1, mesh[objId].mat.specular);
-			loc = glGetUniformLocation(shader.getProgramIndex(), "mat.shininess");
-			glUniform1f(loc, mesh[objId].mat.shininess);
-
-			pushMatrix(MODEL);
-			translate(MODEL, 0.0, 3.0, 0.0f);
-
-			// send matrices to OGL
-			if (type == 0 || type == 1) {     //Cheating matrix reset billboard techniques
-				computeDerivedMatrix(VIEW_MODEL);
-				memcpy(modelview, mCompMatrix[VIEW_MODEL], sizeof(float) * 16);  //save VIEW_MODEL in modelview matrix
-
-				//reset VIEW_MODEL
-				if (type == 0) BillboardCheatSphericalBegin();
-				else BillboardCheatCylindricalBegin();
-
-				computeDerivedMatrix_PVM(); // calculate PROJ_VIEW_MODEL
-			}
-			else computeDerivedMatrix(PROJ_VIEW_MODEL);
-
-			glUniformMatrix4fv(vm_uniformId, 1, GL_FALSE, mCompMatrix[VIEW_MODEL]);
-			glUniformMatrix4fv(pvm_uniformId, 1, GL_FALSE, mCompMatrix[PROJ_VIEW_MODEL]);
-			computeNormalMatrix3x3();
-			glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
-			glBindVertexArray(mesh[objId].vao);
-			glDrawElements(mesh[objId].type, mesh[objId].numIndexes, GL_UNSIGNED_INT, 0);
-			popMatrix(MODEL);
-
-			//	if (type==0 || type==1) // restore matrix   
-				//	BillboardEnd(modelview);   // não é necessário pois a PVM é sempre calculada a pArtir da MODEL e da VIEW que não são ALTERADAS
-
-			popMatrix(MODEL);
-		}
-
-	if (fireworks) {
-		// draw fireworks particles
-		objId = 6;  //quad for particle
-
-		glBindTexture(GL_TEXTURE_2D, TextureArray[1]); //particle.bmp associated to TU0 
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		glDepthMask(GL_FALSE);  //Depth Buffer Read Only
-
-		glUniform1i(texMode_uniformId, 2); // draw modulated textured particles 
-
-		for (int i = 0; i < MAX_PARTICULAS; i++)
-		{
-			if (particula[i].life > 0.0f) /* só desenha as que ainda estão vivas */
-			{
-
-				/* A vida da partícula representa o canal alpha da cor. Como o blend está activo a cor final é a soma da cor rgb do fragmento multiplicada pelo
-				alpha com a cor do pixel destino */
-
-				particle_color[0] = particula[i].r;
-				particle_color[1] = particula[i].g;
-				particle_color[2] = particula[i].b;
-				particle_color[3] = particula[i].life;
-
-				// send the material - diffuse color modulated with texture
-				loc = glGetUniformLocation(shader.getProgramIndex(), "mat.diffuse");
-				glUniform4fv(loc, 1, particle_color);
-
-				pushMatrix(MODEL);
-				translate(MODEL, particula[i].x, particula[i].y, particula[i].z);
-
-				// send matrices to OGL
-				computeDerivedMatrix(PROJ_VIEW_MODEL);
-				glUniformMatrix4fv(vm_uniformId, 1, GL_FALSE, mCompMatrix[VIEW_MODEL]);
-				glUniformMatrix4fv(pvm_uniformId, 1, GL_FALSE, mCompMatrix[PROJ_VIEW_MODEL]);
-				computeNormalMatrix3x3();
-				glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
-
-				glBindVertexArray(mesh[objId].vao);
-				glDrawElements(mesh[objId].type, mesh[objId].numIndexes, GL_UNSIGNED_INT, 0);
-				popMatrix(MODEL);
-			}
-			else dead_num_particles++;
-		}
-
-		glDepthMask(GL_TRUE); //make depth buffer again writeable
-
-		if (dead_num_particles == MAX_PARTICULAS) {
-			fireworks = 0;
-			dead_num_particles = 0;
-			printf("All particles dead\n");
-		}
-
-	}
-	glBindVertexArray(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_BLEND);
-	glutSwapBuffers();
-}
 
 void renderScene(void) {
 
@@ -1344,6 +1191,66 @@ void renderScene(void) {
 			popMatrix(MODEL);
 		}
 
+	if (fireworks) {
+		// draw fireworks particles
+		objId = particle_quad_index;  //quad for particle
+
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, TextureArray[4]); //particle.bmp associated to TU0 
+
+		glUniform1i(tex_loc4, 4);
+
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glDepthMask(GL_FALSE);  //Depth Buffer Read Only
+
+		glUniform1i(texMode_uniformId, 2); // draw modulated textured particles 
+
+		for (int i = 0; i < MAX_PARTICULAS; i++)
+		{
+			if (particula[i].life > 0.0f) /* só desenha as que ainda estão vivas */
+			{
+
+				/* A vida da partícula representa o canal alpha da cor. Como o blend está activo a cor final é a soma da cor rgb do fragmento multiplicada pelo
+				alpha com a cor do pixel destino */
+
+				particle_color[0] = particula[i].r;
+				particle_color[1] = particula[i].g;
+				particle_color[2] = particula[i].b;
+				particle_color[3] = particula[i].life;
+
+				// send the material - diffuse color modulated with texture
+				loc = glGetUniformLocation(shader.getProgramIndex(), "mat.diffuse");
+				glUniform4fv(loc, 1, particle_color);
+
+				pushMatrix(MODEL);
+				translate(MODEL, particula[i].x, particula[i].y, particula[i].z);
+
+				// send matrices to OGL
+				computeDerivedMatrix(PROJ_VIEW_MODEL);
+				glUniformMatrix4fv(vm_uniformId, 1, GL_FALSE, mCompMatrix[VIEW_MODEL]);
+				glUniformMatrix4fv(pvm_uniformId, 1, GL_FALSE, mCompMatrix[PROJ_VIEW_MODEL]);
+				computeNormalMatrix3x3();
+				glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
+
+				glBindVertexArray(mesh[objId].vao);
+				glDrawElements(mesh[objId].type, mesh[objId].numIndexes, GL_UNSIGNED_INT, 0);
+				popMatrix(MODEL);
+			}
+			else dead_num_particles++;
+		}
+
+		glDepthMask(GL_TRUE); //make depth buffer again writeable
+
+		if (dead_num_particles == MAX_PARTICULAS) {
+			fireworks = 0;
+			dead_num_particles = 0;
+			printf("All particles dead\n");
+		}
+
+	}
 
 
 
@@ -1808,10 +1715,11 @@ void init()
 	mesh[objId].mat.texCount = texcount;
 	createQuad(6, 6);
 
-	//// create geometry and VAO of the quad for particles
-	//objId++;
-	//mesh[objId].mat.texCount = texcount;
-	//createQuad(2, 2);
+	// create geometry and VAO of the quad for particles
+	objId++;
+	particle_quad_index = objId;
+	mesh[objId].mat.texCount = texcount;
+	createSphere(0.2,6);
 	// some GL settings
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
