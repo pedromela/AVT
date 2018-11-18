@@ -3,6 +3,8 @@
 uniform sampler2D texmap;
 uniform sampler2D texmap1;
 uniform sampler2D texmap2;
+uniform sampler2D texmap3;
+uniform sampler2D texmap4;
 
 uniform int texMode;
 out vec4 colorOut;
@@ -53,6 +55,13 @@ void main() {
 	{
 		texel = texture(texmap, DataIn.tex_coord);  // texel from stone.tga
 		colorOut = max(intensity*texel + spec, 0.1*texel);
+	}
+	else if (texMode == 3)  {  // tree texture for billboard
+		texel = texture(texmap3, DataIn.tex_coord);
+		if(texel.a == 0.0) discard;
+		else
+			colorOut = max(intensity*texel + spec, 0.1*texel);
+		//colorOut = max(intensity*texel + spec, 0.1*texel);
 	}
 	else if(texMode == 4){
 		texel = texture(texmap2, DataIn.tex_coord);  // texel from lighwood.tga
