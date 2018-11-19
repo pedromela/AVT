@@ -115,6 +115,7 @@ GLint pvm_uniformId;
 GLint vm_uniformId;
 GLint normal_uniformId;
 GLint lPos_uniformId;
+GLint cPos_uniformId;
 GLint tex_loc, tex_loc1, tex_loc2;
 GLint texMode_uniformId;
 
@@ -837,11 +838,17 @@ void renderScene(void) {
 	//glUniform4fv(lPos_uniformId, 1, lightPos); //efeito capacete do mineiro, ou seja lighPos foi definido em eye coord 
 
 	float *res =(float*) malloc(sizeof(float) * _game_objects.size());
-	multMatrixPoint(VIEW, lightPos,res);   //lightPos definido em World Coord so is converted to eye space
+	multMatrixPoint(VIEW, lightPos,res);   //lightPos defined in World Coord so is converted to eye space
 	glUniform4fv(lPos_uniformId, 1, res);
 	//printf("size %d\n", _game_objects.size());
 	//printf("N_OBJECTS %d\n", N_OBJECTS);
 	//car->draw(shader, vm_uniformId, pvm_uniformId, normal_uniformId);
+
+	//float *res2 = (float*)malloc(sizeof(float) * _game_objects.size());
+	//multMatrixPoint(VIEW, {car->getPosition(), 1.0f}, res2);
+	//glUniform3fv(cPos_uniformId, 1,);s
+	float v4p[4] = { car->getPosition()->getX(),  car->getPosition()->getY(),  car->getPosition()->getZ(), 1.0f };
+	glUniform4fv(cPos_uniformId, 4, reinterpret_cast<GLfloat *>(v4p));
 
 	//Associar os Texture Units aos Objects Texture
 	//stone.tga loaded in TU0; checker.tga loaded in TU1;  lightwood.tga loaded in TU2
@@ -1225,6 +1232,7 @@ GLuint setupShaders() {
 	vm_uniformId = glGetUniformLocation(shader.getProgramIndex(), "m_viewModel");
 	normal_uniformId = glGetUniformLocation(shader.getProgramIndex(), "m_normal");
 	lPos_uniformId = glGetUniformLocation(shader.getProgramIndex(), "l_pos");
+	cPos_uniformId = glGetUniformLocation(shader.getProgramIndex(), "c_pos");
 	tex_loc = glGetUniformLocation(shader.getProgramIndex(), "texmap");
 	tex_loc1 = glGetUniformLocation(shader.getProgramIndex(), "texmap1");
 	tex_loc2 = glGetUniformLocation(shader.getProgramIndex(), "texmap2");
@@ -1423,8 +1431,10 @@ void init()
 	glEnable(GL_MULTISAMPLE);
 	glClearStencil(0x0);
 	glEnable(GL_STENCIL_TEST);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glEnable(GL_BLEND);
+	glClearDepth(1);
+	glEnable(GL_DEPTH_TEST);
 }
 
 

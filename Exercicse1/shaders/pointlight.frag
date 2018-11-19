@@ -24,7 +24,14 @@ in Data {
 	vec2 tex_coord;
 } DataIn;
 
+in vec4 car_pos;
+
+const vec3 fogColor = vec3(0.5, 0.5,0.5);
+
 void main() {
+
+	float dist = 0;
+	float fogFactor = 0;
 
 	vec4 spec = vec4(0.0);
 	vec4 texel, texel1;
@@ -65,6 +72,14 @@ void main() {
 		colorOut = max(intensity*texel*texel1 + spec, 0.1*texel*texel1);
 		//colorOut = texel * texel1;
 	}
+
+	dist = length(car_pos);
 	
+	fogFactor = (40 - dist)/(40 - 10);
+	fogFactor = clamp( fogFactor, 0.0, 1.0 );
+
+	vec3 cov3 = vec3(colorOut[0], colorOut[1], colorOut[2]);
+	vec3 fcov3 = mix(fogColor, cov3, fogFactor);
+	colorOut = vec4(fcov3, colorOut[3]);
 	
 }

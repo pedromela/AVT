@@ -5,6 +5,7 @@ uniform mat4 m_viewModel;
 uniform mat3 m_normal;
 
 uniform vec4 l_pos;
+uniform vec4 c_pos;
 
 in vec4 position;
 in vec4 normal;    //por causa do gerador de geometria
@@ -17,9 +18,12 @@ out Data {
 	vec2 tex_coord;
 } DataOut;
 
+out vec4 car_pos;
+
 void main () {
 
 	vec4 pos = m_viewModel * position;
+	car_pos = pos;
 
 	DataOut.normal = normalize(m_normal * normal.xyz);
 	DataOut.lightDir = vec3(l_pos - pos);
