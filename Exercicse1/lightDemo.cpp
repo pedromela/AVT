@@ -10,6 +10,10 @@
 // You may use it, or parts of it, wherever you want.
 //
 
+#define frand()			((float)rand()/RAND_MAX)
+#define M_PI			3.14159265
+#define MAX_PARTICULAS  1500
+
 #include <math.h>
 #include <iostream>
 #include <sstream>
@@ -40,6 +44,8 @@
 
 #include "TGA.h"
 
+#include "maths.h"
+#include "l3dBillboard.h"
 
 // include DevIL for image loading
 #include "Dependencies/IL/il.h"
@@ -73,9 +79,12 @@ int WinX = 640, WinY = 480;
 
 unsigned int FrameCount = 0;
 
-GLuint TextureArray[3];
+GLuint TextureArray[5];
 
 VSShaderLib shader;
+
+VSShaderLib shader_billboard;
+
 
 // Create an instance of the Importer class
 Assimp::Importer importer;
@@ -116,7 +125,7 @@ GLint vm_uniformId;
 GLint normal_uniformId;
 GLint lPos_uniformId;
 GLint cPos_uniformId;
-GLint tex_loc, tex_loc1, tex_loc2;
+GLint tex_loc, tex_loc1, tex_loc2, tex_loc3, tex_loc4;
 GLint texMode_uniformId;
 
 // Camera Position
@@ -134,6 +143,8 @@ long myTime,timebase = 0,frame = 0;
 char s[32];
 float lightPos[4] = {4.0f, 6.0f, 2.0f, 1.0f};
 
+int type = 0;
+int fireworks = 0;
 
 GLuint matricesUniLoc = 1, materialUniLoc = 2;
 
@@ -141,8 +152,11 @@ GLuint texture[10];
 
 static const std::string modelname = "carro.obj";
 
+int tree_quad_index = 0;
 
-std::vector<struct MyMesh> mesh(N_OBJECTS);
+int particle_quad_index = 0;
+
+std::vector<struct MyMesh> mesh(N_OBJECTS+2);
 std::vector<struct MyMesh> myMeshes;
 
 //struct MyMesh mesh[N_OBJECTS];
@@ -169,6 +183,18 @@ int y = 100;
 int z = 120;
 
 bool pause = false;
+
+typedef struct {
+	float	life;		// vida
+	float	fade;		// fade
+	float	r, g, b;    // color
+	GLfloat x, y, z;    // posição
+	GLfloat vx, vy, vz; // velocidade 
+	GLfloat ax, ay, az; // aceleração
+} Particle;
+
+Particle particula[MAX_PARTICULAS];
+int dead_num_particles = 0;
 
 void add(GameObject* obj) {
 	_game_objects.push_back(obj);
@@ -739,10 +765,70 @@ void recursive_render(const aiScene *sc, const aiNode* nd)
 	}
 	//popMatrix();
 }
+
+void iniParticulas(void)
+{
+	GLfloat v, theta, phi;
+	int i;
+
+	for (i = 0; i < MAX_PARTICULAS; i++)
+	{
+		v = 0.8*frand() + 0.2;
+		phi = frand()*M_PI;
+		theta = 2.0*frand()*M_PI;
+
+		particula[i].x = 9.0f;
+		particula[i].y = 10.0f;
+		particula[i].z = 9.0f;
+		particula[i].vx = v * cos(theta) * sin(phi);
+		particula[i].vy = v * cos(phi);
+		particula[i].vz = v * sin(theta) * sin(phi);
+		particula[i].ax = 0.1f; /* simular um pouco de vento */
+		particula[i].ay = -0.15f; /* simular a aceleraÁ„o da gravidade */
+		particula[i].az = 0.0f;
+
+		/* tom amarelado que vai ser multiplicado pela textura que varia entre branco e preto */
+		particula[i].r = 0.882f;
+		particula[i].g = 0.552f;
+		particula[i].b = 0.211f;
+
+		particula[i].life = 1.0f;		/* vida inicial */
+		particula[i].fade = 0.005f;	    /* step de decrÈscimo da vida para cada iteraÁ„o */
+	}
+}
+
+void iterate(int value)
+{
+	int i;
+	float h;
+
+	/* MÈtodo de Euler de integraÁ„o de eq. diferenciais ordin·rias
+	h representa o step de tempo; dv/dt = a; dx/dt = v; e conhecem-se os valores iniciais de x e v */
+
+	h = 0.125f;
+	//	h = 0.033;
+	if (fireworks) {
+
+		for (i = 0; i < MAX_PARTICULAS; i++)
+		{
+			particula[i].x += (h*particula[i].vx);
+			particula[i].y += (h*particula[i].vy);
+			particula[i].z += (h*particula[i].vz);
+			particula[i].vx += (h*particula[i].ax);
+			particula[i].vy += (h*particula[i].ay);
+			particula[i].vz += (h*particula[i].az);
+			particula[i].life -= particula[i].fade;
+		}
+		glutPostRedisplay();
+		glutTimerFunc(33, iterate, 0);
+	}
+}
+
 // ------------------------------------------------------------
 //
 // Render stufff
 //
+
 
 void renderScene(void) {
 
@@ -861,6 +947,7 @@ void renderScene(void) {
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, TextureArray[2]);
+
 
 	//Indicar aos tres samplers do GLSL quais os Texture Units a serem usados
 	glUniform1i(tex_loc, 0);
@@ -1015,7 +1102,171 @@ void renderScene(void) {
 	recursive_render(scene, scene->mRootNode);
 	popMatrix(MODEL);
 
+
+
+
+
+
+
+
+	float modelview[16];  //To be used in "Cheating" Matrix reset Billboard technique
+
+	FrameCount++;
+
+	float pos[3], right[3], up[3];
+	float particle_color[4];
+
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glEnable(GL_DEPTH_TEST);
+
+	float cam[3] = { _cameras[CAM - 1]->getPosition()->getX(), _cameras[CAM - 1]->getPosition()->getZ(), _cameras[CAM - 1]->getPosition()->getY() };
+
+	//loadIdentity(MODEL);
+	//loadIdentity(VIEW);
+
+
+
+	// use our shader
+	//glUseProgram(shader.getProgramIndex());
+
+	//Associar os Texture Units aos Objects Texture
+	//TU0 will be used to store tree.tga OR particle.bmp: there is no multexturing in this demo
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, TextureArray[3]);  //tree.tga associated to TU0
+
+	glUniform1i(tex_loc3, 3);
+
+	float res2[4];
+	multMatrixPoint(VIEW, lightPos, res2);   //lightPos definido em World Coord so it is converted to eye space
+	glUniform4fv(lPos_uniformId, 1, res2);
+
+
+	//Draw trees billboards
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glUniform1i(texMode_uniformId, 3); // draw textured quads
+
+	for (int i = -5; i < 5; i++)
+		for (int j = -5; j < 5; j++) {
+			pushMatrix(MODEL);
+			translate(MODEL, 5 + i * 10.0, 0, 5 + j * 10.0);
+
+			pos[0] = 5 + i * 10.0; pos[1] = 0; pos[2] = 5 + j * 10.0;
+
+			if (type == 2)
+				l3dBillboardSphericalBegin(cam, pos);
+			else if (type == 3)
+				l3dBillboardCylindricalBegin(cam, pos);
+
+			objId = tree_quad_index;  //quad
+
+			//diffuse and ambient color are not used in the tree quads
+			loc = glGetUniformLocation(shader.getProgramIndex(), "mat.specular");
+			glUniform4fv(loc, 1, mesh[objId].mat.specular);
+			loc = glGetUniformLocation(shader.getProgramIndex(), "mat.shininess");
+			glUniform1f(loc, mesh[objId].mat.shininess);
+
+			pushMatrix(MODEL);
+			translate(MODEL, 0.0, 3.0, 0.0f);
+
+			// send matrices to OGL
+			if (type == 0 || type == 1) {     //Cheating matrix reset billboard techniques
+				computeDerivedMatrix(VIEW_MODEL);
+				memcpy(modelview, mCompMatrix[VIEW_MODEL], sizeof(float) * 16);  //save VIEW_MODEL in modelview matrix
+
+				//reset VIEW_MODEL
+				if (type == 0) BillboardCheatSphericalBegin();
+				else BillboardCheatCylindricalBegin();
+
+				computeDerivedMatrix_PVM(); // calculate PROJ_VIEW_MODEL
+			}
+			else computeDerivedMatrix(PROJ_VIEW_MODEL);
+
+			glUniformMatrix4fv(vm_uniformId, 1, GL_FALSE, mCompMatrix[VIEW_MODEL]);
+			glUniformMatrix4fv(pvm_uniformId, 1, GL_FALSE, mCompMatrix[PROJ_VIEW_MODEL]);
+			computeNormalMatrix3x3();
+			glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
+			glBindVertexArray(mesh[objId].vao);
+			glDrawElements(mesh[objId].type, mesh[objId].numIndexes, GL_UNSIGNED_INT, 0);
+			popMatrix(MODEL);
+
+			//	if (type==0 || type==1) // restore matrix   
+				//	BillboardEnd(modelview);   // n„o È necess·rio pois a PVM È sempre calculada a pArtir da MODEL e da VIEW que n„o s„o ALTERADAS
+
+			popMatrix(MODEL);
+		}
+
+	if (fireworks) {
+		// draw fireworks particles
+		objId = particle_quad_index;  //quad for particle
+
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, TextureArray[4]); //particle.bmp associated to TU0 
+
+		glUniform1i(tex_loc4, 4);
+
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glDepthMask(GL_FALSE);  //Depth Buffer Read Only
+
+		glUniform1i(texMode_uniformId, 2); // draw modulated textured particles 
+
+		for (int i = 0; i < MAX_PARTICULAS; i++)
+		{
+			if (particula[i].life > 0.0f) /* sÛ desenha as que ainda est„o vivas */
+			{
+
+				/* A vida da partÌcula representa o canal alpha da cor. Como o blend est· activo a cor final È a soma da cor rgb do fragmento multiplicada pelo
+				alpha com a cor do pixel destino */
+
+				particle_color[0] = particula[i].r;
+				particle_color[1] = particula[i].g;
+				particle_color[2] = particula[i].b;
+				particle_color[3] = particula[i].life;
+
+				// send the material - diffuse color modulated with texture
+				loc = glGetUniformLocation(shader.getProgramIndex(), "mat.diffuse");
+				glUniform4fv(loc, 1, particle_color);
+
+				pushMatrix(MODEL);
+				translate(MODEL, particula[i].x, particula[i].y, particula[i].z);
+
+				// send matrices to OGL
+				computeDerivedMatrix(PROJ_VIEW_MODEL);
+				glUniformMatrix4fv(vm_uniformId, 1, GL_FALSE, mCompMatrix[VIEW_MODEL]);
+				glUniformMatrix4fv(pvm_uniformId, 1, GL_FALSE, mCompMatrix[PROJ_VIEW_MODEL]);
+				computeNormalMatrix3x3();
+				glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
+
+				glBindVertexArray(mesh[objId].vao);
+				glDrawElements(mesh[objId].type, mesh[objId].numIndexes, GL_UNSIGNED_INT, 0);
+				popMatrix(MODEL);
+			}
+			else dead_num_particles++;
+		}
+
+		glDepthMask(GL_TRUE); //make depth buffer again writeable
+
+		if (dead_num_particles == MAX_PARTICULAS) {
+			fireworks = 0;
+			dead_num_particles = 0;
+			printf("All particles dead\n");
+		}
+
+	}
+
+
+
+
+
+
+
 	glutSwapBuffers();
+	//renderSceneBillboard();
 }
 
 // ------------------------------------------------------------
@@ -1060,6 +1311,11 @@ void processKeys(unsigned char key, int xx, int yy)
 			glutLeaveMainLoop();
 			break;
 
+		case 'e':
+			fireworks = 1;
+			iniParticulas();
+			glutTimerFunc(0, iterate, 0);  //timer for particle system
+			break;
 		case 'c': 
 			printf("Camera Spherical Coordinates (%f, %f, %f)\n", alpha, beta, r);
 			break;
@@ -1212,6 +1468,33 @@ void mouseWheel(int wheel, int direction, int x, int y) {
 //
 
 
+GLuint setupShaderBillboard() {
+
+	// Shader for models
+	shader_billboard.init();
+	shader_billboard.loadShader(VSShaderLib::VERTEX_SHADER, "shaders/billboard.vert");
+	shader_billboard.loadShader(VSShaderLib::FRAGMENT_SHADER, "shaders/billboard.frag");
+
+	// set semantics for the shader variables
+	glBindFragDataLocation(shader_billboard.getProgramIndex(), 0, "colorOut");
+	glBindAttribLocation(shader_billboard.getProgramIndex(), VERTEX_COORD_ATTRIB, "position");
+	glBindAttribLocation(shader_billboard.getProgramIndex(), NORMAL_ATTRIB, "normal");
+	glBindAttribLocation(shader_billboard.getProgramIndex(), TEXTURE_COORD_ATTRIB, "texCoord");
+
+	glLinkProgram(shader.getProgramIndex());
+
+	texMode_uniformId = glGetUniformLocation(shader_billboard.getProgramIndex(), "texMode"); // different modes of texturing
+	pvm_uniformId = glGetUniformLocation(shader_billboard.getProgramIndex(), "m_pvm");
+	vm_uniformId = glGetUniformLocation(shader.getProgramIndex(), "m_viewModel");
+	normal_uniformId = glGetUniformLocation(shader_billboard.getProgramIndex(), "m_normal");
+	lPos_uniformId = glGetUniformLocation(shader_billboard.getProgramIndex(), "l_pos");
+	tex_loc = glGetUniformLocation(shader_billboard.getProgramIndex(), "texmap");
+
+	printf("InfoLog for Hello World Shader\n%s\n\n", shader_billboard.getAllInfoLogs().c_str());
+
+	return(shader_billboard.isProgramLinked());
+}
+
 GLuint setupShaders() {
 
 	// Shader for models
@@ -1236,7 +1519,9 @@ GLuint setupShaders() {
 	tex_loc = glGetUniformLocation(shader.getProgramIndex(), "texmap");
 	tex_loc1 = glGetUniformLocation(shader.getProgramIndex(), "texmap1");
 	tex_loc2 = glGetUniformLocation(shader.getProgramIndex(), "texmap2");
-	
+	tex_loc3 = glGetUniformLocation(shader.getProgramIndex(), "texmap3");
+	tex_loc4 = glGetUniformLocation(shader.getProgramIndex(), "texmap4");
+
 	printf("InfoLog for Per Fragment Phong Lightning Shader\n%s\n\n", shader.getAllInfoLogs().c_str());
 	
 	return(shader.isProgramLinked());
@@ -1256,10 +1541,12 @@ void init()
 	//add_texture_orange(loadTextureFromFile("./orange.bmp"));
 	//add_texture_butter(loadTextureFromFile("./marble02.bmp"));
 
-	glGenTextures(3, TextureArray);
+	glGenTextures(5, TextureArray);
 	TGA_Texture(TextureArray, "stone.tga", 0);
 	TGA_Texture(TextureArray, "checker.tga", 1);
 	TGA_Texture(TextureArray, "lightwood.tga", 2);
+	TGA_Texture(TextureArray, "tree.tga", 3);
+	TGA_Texture(TextureArray, "particle.tga", 4);
 
 
 
@@ -1425,6 +1712,22 @@ void init()
 	add_cam(new PerspectiveCamera(45, 1, 1, 50));
 	add_cam(new PerspectiveCamera(45, 1, 1, 20));
 	_cameras[2]->setCar(car);
+
+
+	// create geometry and VAO of the quad for trees
+	objId++;
+	tree_quad_index = objId;
+	memcpy(mesh[objId].mat.specular, spec, 4 * sizeof(float));
+	memcpy(mesh[objId].mat.emissive, emissive, 4 * sizeof(float));
+	mesh[objId].mat.shininess = shininess;
+	mesh[objId].mat.texCount = texcount;
+	createQuad(6, 6);
+
+	// create geometry and VAO of the quad for particles
+	objId++;
+	particle_quad_index = objId;
+	mesh[objId].mat.texCount = texcount;
+	createSphere(0.2,6);
 	// some GL settings
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -1442,6 +1745,19 @@ void init()
 //
 // Main function
 //
+void pressKey(int key, int x1, int y1) {
+
+	switch (key) {
+	case GLUT_KEY_F5: type++; if (type == 5) type = 0;
+		switch (type) {
+		case 0: printf("Cheating Spherical (matrix reset)\n"); break;
+		case 1: printf("Cheating Cylindrical (matrix reset)\n"); break;
+		case 2: printf("True Spherical\n"); break;
+		case 3: printf("True Cylindrical\n"); break;
+		case 4: printf("No billboarding\n"); break;
+		}
+	}
+}
 
 
 int main(int argc, char **argv) {
@@ -1475,6 +1791,8 @@ int main(int argc, char **argv) {
 //	Mouse and Keyboard Callbacks
 	glutKeyboardFunc(processKeys);
 	glutKeyboardUpFunc(processKeysUp);
+	glutSpecialFunc(pressKey);
+
 	glutMouseFunc(processMouseButtons);
 	glutMotionFunc(processMouseMotion);
 	glutMouseWheelFunc ( mouseWheel ) ;
@@ -1495,6 +1813,10 @@ int main(int argc, char **argv) {
 
 	if (!setupShaders())
 		return(1);
+	//if (!setupShaderBillboard()) {
+	//	
+	//	//return(1);
+	//}
 
 	init();
 

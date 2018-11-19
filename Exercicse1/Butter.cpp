@@ -63,7 +63,7 @@ Butter::Butter(double x, double y, double z, MyMesh * _mesh)
 	setPosition(x, y, z);
 	tamanho = 0.75;
 	setRaio((tamanho*tamanho) + ((tamanho / 2)*(tamanho / 2)));
-	setTexMd(3);
+	setTexMd(5);
 	setSpeed(0, 0, 0);
 	float amb2[4] = { 0.74f,0.74f,0.0f,0.2f };
 	float diff2[4] = { 0.5f,0.5f,0.4f,0.2f };
