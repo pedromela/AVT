@@ -846,47 +846,6 @@ void renderScene(void) {
 		loadIdentity(MODEL);
 		// set the camera using a function similar to gluLookAt
 		lookAt(0, 18, 0, 0, 9, 0, 9, 1, 0);
-		//loadIdentity(PROJECTION);
-		/*if (WinX <= WinY)
-			//ortho(-2.0, 2.0, -2.0*(GLfloat)WinY / (GLfloat)WinX,
-			//	2.0*(GLfloat)WinY / (GLfloat)WinX, 10, 10);
-			ortho(-3.0f, 21.0f, -3.0f, 21.0f, 10, 10);
-		else
-			ortho(-2.0*(GLfloat)WinX / (GLfloat)WinY,
-				2.0*(GLfloat)WinX / (GLfloat)WinY, -2.0, 2.0, -10, 10);
-			//ortho(-3.0f, 21.0f, -3.0f, 21.0f, -40.0f, 40.0f);
-
-		// load identity matrices for Model-View
-		loadIdentity(VIEW);
-		loadIdentity(MODEL);*/
-
-		//glUseProgram(shader.getProgramIndex());
-
-		//objId = _game_objects.size()-2;  //cube
-		/*objId = 114;  //cube-114
-
-		//rotate(MODEL, 90.0f, 0.0f, 45.0f, 1.0);
-		//translate(MODEL, -0.5f, -0.5f, -0.5f);
-		// send matrices to OGL
-		computeDerivedMatrix(PROJ_VIEW_MODEL);
-		glUniformMatrix4fv(vm_uniformId, 1, GL_FALSE, mCompMatrix[VIEW_MODEL]);
-		glUniformMatrix4fv(pvm_uniformId, 1, GL_FALSE, mCompMatrix[PROJ_VIEW_MODEL]);
-		computeNormalMatrix3x3();
-		glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
-
-		glClear(GL_STENCIL_BUFFER_BIT);
-
-		glStencilFunc(GL_NEVER, 0x1, 0x1);
-		glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
-
-		glBindVertexArray(_game_objects[objId]->mesh->vao);
-		glDrawElements(mesh[objId].type, mesh[objId].numIndexes, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-
-		// set the projection matrix
-		//ratio = (1.0f * WinX) / WinY;
-		loadIdentity(PROJECTION);
-		//perspective(30.0f, ratio, 0.1f, 1000.0f);*/
 
 	}
 	if (CAM == 2) {
@@ -982,16 +941,17 @@ void renderScene(void) {
 		glUniformMatrix3fv(normal_uniformId, 1, GL_FALSE, mNormal3x3);
 
 		//dentro do filtro
-		if (i >= N_ORANGES + 1 && i < N_ORANGES + N_BUTTERS + 1) {
-			glStencilFunc(GL_EQUAL, 0x1, 0x1);
-			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		}
-		/*if (i == _game_objects.size()-1) {
+		/*if (i >= N_ORANGES + 1 && i < N_ORANGES + N_BUTTERS + 1) {
 			glStencilFunc(GL_EQUAL, 0x1, 0x1);
 			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		}*/
+		if (i > N_ORANGES + N_BUTTERS + 1 && i < N_ORANGES + N_BUTTERS + 1 + N_CHEERIOS*6 + 5) {
+			glStencilFunc(GL_EQUAL, 0x1, 0x1);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		}
 		//filtro
 		else if (i == N_ORANGES + N_BUTTERS + 1) {
+			std::cout << i;
 			glClear(GL_STENCIL_BUFFER_BIT);
 			glStencilFunc(GL_NEVER, 0x1, 0x1);
 			glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
@@ -1017,7 +977,8 @@ void renderScene(void) {
 		else if (i%2 == 0) glUniform1i(texMode_uniformId, 0); // modulate Phong color with texel color
 		else if (i%3 == 1) glUniform1i(texMode_uniformId, 1); // só componente especular
 		else glUniform1i(texMode_uniformId, 2); // multitexturing*/
-		if(texMd == 0) glUniform1i(texMode_uniformId, 4);
+		if (i == N_ORANGES + N_BUTTERS + 1) glUniform1i(texMode_uniformId, 0);
+		else if(texMd == 0) glUniform1i(texMode_uniformId, 4);
 		else if(texMd == 1) glUniform1i(texMode_uniformId, 1);
 		else if (texMd == 2) glUniform1i(texMode_uniformId, 0);
 		else if (texMd == 3) glUniform1i(texMode_uniformId, 3);
