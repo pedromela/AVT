@@ -951,7 +951,6 @@ void renderScene(void) {
 		}
 		//filtro
 		else if (i == N_ORANGES + N_BUTTERS + 1) {
-			std::cout << i;
 			glClear(GL_STENCIL_BUFFER_BIT);
 			glStencilFunc(GL_NEVER, 0x1, 0x1);
 			glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
